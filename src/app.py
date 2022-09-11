@@ -1,4 +1,5 @@
 import asyncio
+import json
 from http import HTTPStatus
 from os import environ
 
@@ -40,7 +41,8 @@ async def healthcheck():
 @app.post(WEBHOOK_URL)
 async def webhook(request: Request):
     data = await request.json()
-    print({"status": "update_received", "text": data["message"]["text"]})
+    # print({"status": "update_received", "text": data["message"]["text"]})
+    print(json.dumps(data, indent=2))
     return {}
 
 
