@@ -41,8 +41,7 @@ async def healthcheck():
 @app.post(WEBHOOK_URL)
 async def webhook(request: Request):
     data = await request.json()
-    # print({"status": "update_received", "text": data["message"]["text"]})
-    print(json.dumps(data, indent=2))
+    print(json.dumps(data, indent=2, ensure_ascii=False))
     return {}
 
 
