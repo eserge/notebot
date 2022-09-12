@@ -6,8 +6,9 @@ from os import environ
 import httpx
 from fastapi import FastAPI, Request
 
+from entities import Update
+from utils import JsonDumps
 
-app = FastAPI()
 
 TELEGRAM_TOKEN = environ.get("TELEGRAM_TOKEN")
 if not TELEGRAM_TOKEN:
@@ -33,15 +34,17 @@ TELEGRAM_SET_WEBHOOK_URL = f"{TELEGRAM_API_URL_BASE}setWebhook"
 WEBHOOK_URL = f"/webhook/{TELEGRAM_TOKEN_WEBSAFE}"
 
 
+app = FastAPI()
+
+
 @app.get("/healthcheck/")
 async def healthcheck():
     return {"healthcheck": "OK"}
 
 
 @app.post(WEBHOOK_URL)
-async def webhook(request: Request):
-    data = await request.json()
-    print(json.dumps(data, indent=2, ensure_ascii=False))
+async def webhook(update: Update):
+    print(json.dumps(update.dict(), indent=2, ensure_ascii=False, cls=JsonDumps))
     return {}
 
 
