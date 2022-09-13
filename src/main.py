@@ -3,7 +3,7 @@ import sys
 import uvicorn
 from pyngrok import ngrok
 
-from app import WEBHOOK_URL, install_webhook, settings
+from app import telegram, settings
 
 
 def get_public_url(private_port) -> str:
@@ -14,9 +14,10 @@ def get_public_url(private_port) -> str:
 
 def main():
     public_url = get_public_url(settings.app_port)
-    public_webhook_url = f"{public_url}{WEBHOOK_URL}"
+    webhook_url = telegram.get_webhook_url()
+    public_webhook_url = f"{public_url}{webhook_url}"
 
-    webhook_installed = install_webhook(public_webhook_url)
+    webhook_installed = telegram.install_webhook(public_webhook_url)
     if webhook_installed:
         print(f"Webhook is set up on {public_webhook_url}")
         uvicorn.run(
