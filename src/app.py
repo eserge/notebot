@@ -4,7 +4,7 @@ from http import HTTPStatus
 from os import environ
 
 import httpx
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 
 from entities import Update
 from utils import JsonDumps
@@ -50,11 +50,11 @@ async def webhook(update: Update):
 
 def install_webhook(public_webhook_url):
     loop = asyncio.get_event_loop()
-    result = loop.run_until_complete(set_webhook(public_webhook_url))
+    result = loop.run_until_complete(request_webhook(public_webhook_url))
     return result
 
 
-async def set_webhook(webhook_url: str):
+async def request_webhook(webhook_url: str):
     payload = {
         "url": webhook_url,
         "secret_token": TELEGRAM_SECRET,
