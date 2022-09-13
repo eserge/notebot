@@ -10,6 +10,7 @@ fastapi = "^0.82.0"
 uvicorn = {extras = ["standard"], version = "^0.18.3"}
 httpx = "^0.23.0"
 pyngrok = "^5.1.0"
+attrs = "^22.1.0"
 
 [tool.poetry.dev-dependencies]
 pudb = "^2022.1.2"

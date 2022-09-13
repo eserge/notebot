@@ -19,7 +19,7 @@ trio = ["trio (>=0.16)"]
 name = "attrs"
 version = "22.1.0"
 description = "Classes Without Boilerplate"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
@@ -489,7 +489,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "8a7a50019eb701b113a2b316ac7140780cf3eeefa2fc23dc93cf6fa2e262458c"
+content-hash = "caac42ba04bedc60dbc2b3be65af9513b5f77d7a4256f0decdbeb0889e0fd246"
 
 [metadata.files]
 anyio = []

@@ -6,6 +6,7 @@ from os import environ
 import httpx
 from fastapi import FastAPI
 
+from domain import process_message, get_message
 from entities import Update
 from utils import JsonDumps
 
@@ -44,7 +45,9 @@ async def healthcheck():
 
 @app.post(WEBHOOK_URL)
 async def webhook(update: Update):
-    print(json.dumps(update.dict(), indent=2, ensure_ascii=False, cls=JsonDumps))
+    message = get_message(update)
+    process_message(message)
+    # print(json.dumps(update.dict(), indent=2, ensure_ascii=False, cls=JsonDumps))
     return {}
 
 
