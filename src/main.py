@@ -3,7 +3,7 @@ import sys
 import uvicorn
 from pyngrok import ngrok
 
-from app import APP_HOST, APP_PORT, WEBHOOK_URL, install_webhook
+from app import WEBHOOK_URL, install_webhook, settings
 
 
 def get_public_url(private_port) -> str:
@@ -13,13 +13,15 @@ def get_public_url(private_port) -> str:
 
 
 def main():
-    public_url = get_public_url(APP_PORT)
+    public_url = get_public_url(settings.app_port)
     public_webhook_url = f"{public_url}{WEBHOOK_URL}"
 
     webhook_installed = install_webhook(public_webhook_url)
     if webhook_installed:
         print(f"Webhook is set up on {public_webhook_url}")
-        uvicorn.run("app:app", host=APP_HOST, port=APP_PORT, reload=True)
+        uvicorn.run(
+            "app:app", host=settings.app_host, port=settings.app_port, reload=True
+        )
 
         ngrok.disconnect(public_url)
         print("Exited")
