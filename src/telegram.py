@@ -5,17 +5,12 @@ import attrs
 import httpx
 
 
-# TELEGRAM_API_URL_BASE = f"https://api.telegram.org/bot{get_settings().telegram_token}/"
-# TELEGRAM_SET_WEBHOOK_URL = f"{TELEGRAM_API_URL_BASE}setWebhook"
-
-
 @attrs.define
 class Telegram:
     token: str
     secret: str
 
     API_URL_BASE = "https://api.telegram.org/bot"
-    # API_SET_WEBHOOK_URL = f"{API_URL_BASE}setWebhook"
 
     def install_webhook(self, public_webhook_url) -> bool:
         loop = asyncio.get_event_loop()
