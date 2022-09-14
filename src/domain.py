@@ -14,4 +14,4 @@ def process_message(message: Message) -> None:
 
 
 def sendNote(note: Note) -> None:
-    print(note)
+    print(note.text)
