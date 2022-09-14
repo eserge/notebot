@@ -1,4 +1,4 @@
-from typing import Deque, List
+from typing import Deque, List, Optional
 
 import attrs
 from collections import deque
@@ -31,8 +31,23 @@ class MessageAdapter:
             return message.caption
 
     @staticmethod
-    def get_photos():
-        return
+    def get_link(messages: Messages) -> Optional[str]:
+        message = messages[0]
+        if not message.forward_from_chat:
+            return None
+        if not message.forward_from_chat.username:
+            return None
+        if not message.forward_from_message_id:
+            return None
+
+        chat_name = message.forward_from_chat.username
+        message_id = message.forward_from_message_id
+        return f"https://t.me/{chat_name}/{message_id}"
+
+    @staticmethod
+    def get_id(messages: Messages) -> int:
+        message = messages[0]
+        return message.message_id
 
 
 class Note:
@@ -45,3 +60,11 @@ class Note:
     @property
     def text(self) -> str:
         return self.adapter.get_text(self.messages)
+
+    @property
+    def link(self) -> str:
+        return self.adapter.get_link(self.messages)
+
+    @property
+    def id(self) -> int:
+        return self.adapter.get_id(self.messages)
