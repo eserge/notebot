@@ -1,4 +1,5 @@
-# Borrowed from https://github.com/isys35/pyteledantic/blob/master/pyteledantic/models.py
+# Borrowed from:
+# https://github.com/isys35/pyteledantic/blob/master/pyteledantic/models.py
 
 from datetime import datetime
 from typing import Optional, Union, List

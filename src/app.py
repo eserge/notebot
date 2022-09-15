@@ -1,5 +1,3 @@
-import asyncio
-
 from fastapi import FastAPI
 
 from config import get_settings
