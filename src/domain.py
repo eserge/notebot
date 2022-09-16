@@ -36,8 +36,8 @@ def _gather_note_data(note: Note) -> dict:
     data = {
         "text": note.text,
     }
-    if note.link:
-        data["link"] = note.link
+    if note.message_link:
+        data["message_link"] = note.message_link
 
     return data
 

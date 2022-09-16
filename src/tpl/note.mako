@@ -1,10 +1,16 @@
+<%!
+    def linebreaks(text):
+        return text.replace("\n", "<br/>\n")
+%>
 <html>
 <body>
-% if link:
-<p><a href="${link}">${link}</a></p>
+% if message_link:
+<p><a href="${message_link}">${message_link}</a></p>
 % else:
 <p>This content couldn't be linked back.</p>
 % endif
-<p>${text}</p>
+% for paragraph in text:
+<p>${paragraph| linebreaks}</p>
+% endfor
 </body>
 </html>

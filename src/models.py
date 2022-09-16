@@ -1,3 +1,4 @@
+import re
 from typing import Deque, List, Optional
 
 import attrs
@@ -23,12 +24,21 @@ class MessageChain:
 
 class MessageAdapter:
     @staticmethod
-    def get_text(messages: Messages) -> str:
+    def get_text(messages: Messages) -> List[str]:
         message = messages[0]
         if message.text:
-            return message.text
+            text = message.text
         if message.caption:
-            return message.caption
+            text = message.caption
+
+        return MessageAdapter.parse_text(text)
+
+    @staticmethod
+    def parse_text(text: str) -> List[str]:
+        # split text into paragraphs, where they're denoted
+        # by a sequence of 2 or more \n chars
+        paragraphs = re.split("\n{2,}", text)
+        return paragraphs
 
     @staticmethod
     def get_link(messages: Messages) -> Optional[str]:
@@ -51,6 +61,12 @@ class MessageAdapter:
 
 
 class Note:
+    """
+    An abstract representation of a note.
+    Text consisting of a list of paragraphs.
+    Attached files and photos
+    """
+
     messages: Messages
 
     def __init__(self, chain: MessageChain) -> None:
@@ -58,11 +74,11 @@ class Note:
         self.adapter = MessageAdapter
 
     @property
-    def text(self) -> str:
+    def text(self) -> List[str]:
         return self.adapter.get_text(self.messages)
 
     @property
-    def link(self) -> str:
+    def message_link(self) -> str:
         return self.adapter.get_link(self.messages)
 
     @property
