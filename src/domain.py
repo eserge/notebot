@@ -38,6 +38,8 @@ def _gather_note_data(note: Note) -> dict:
     }
     if note.message_link:
         data["message_link"] = note.message_link
+    if note.links:
+        data["links"] = note.links
 
     return data
 

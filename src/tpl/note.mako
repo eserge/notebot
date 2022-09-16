@@ -9,5 +9,13 @@
 % for paragraph in text:
 <p>${paragraph| filters.linebreaks, filters.links}</p>
 % endfor
+% if links:
+<h3>Links:</h3>
+<ul>
+    % for link in links:
+    <li><a href="${link['url']}">${link['text']}</a></li>
+    % endfor
+</ul>
+% endif
 </body>
 </html>

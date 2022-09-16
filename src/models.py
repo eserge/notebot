@@ -3,7 +3,7 @@ from typing import Deque, List, Optional
 
 import attrs
 from collections import deque
-from entities import Message
+from entities import Message, MessageEntity
 
 Messages = List[Message]
 
@@ -23,6 +23,8 @@ class MessageChain:
 
 
 class MessageAdapter:
+    LINK_ENTITY_TYPE = "text_link"
+
     @staticmethod
     def get_text(messages: Messages) -> List[str]:
         message = messages[0]
@@ -59,6 +61,30 @@ class MessageAdapter:
         message = messages[0]
         return message.message_id
 
+    @staticmethod
+    def links(messages: Messages) -> List[str]:
+        message = messages[0]
+        print(message)
+        if message.entities or message.caption_entities:
+            entities = message.entities or message.caption_entities
+
+        if message.text or message.caption:
+            text = message.text or message.caption
+
+        print(type(entities))
+
+        entity_objects = [MessageEntity(**ent) for ent in entities]
+
+        return [
+            {"url": entity.url, "text": MessageAdapter.get_link_text(entity, text)}
+            for entity in entity_objects
+            if entity.type == MessageAdapter.LINK_ENTITY_TYPE and entity.url
+        ]
+
+    @staticmethod
+    def get_link_text(entity: MessageEntity, message: str) -> str:
+        return message[entity.offset : entity.offset + entity.length]
+
 
 class Note:
     """
@@ -84,3 +110,7 @@ class Note:
     @property
     def id(self) -> int:
         return self.adapter.get_id(self.messages)
+
+    @property
+    def links(self) -> List[str]:
+        return self.adapter.links(self.messages)
