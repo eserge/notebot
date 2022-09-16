@@ -26,8 +26,10 @@ def main():
 
         ngrok.disconnect(public_url)
         print("Exited")
+        return 0
     else:
         print("Failed to set up webbhook")
+        return 1
 
 
 if __name__ == "__main__":
