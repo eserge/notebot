@@ -64,14 +64,16 @@ class MessageAdapter:
     @staticmethod
     def links(messages: Messages) -> List[str]:
         message = messages[0]
+        entities = None
         print(message)
         if message.entities or message.caption_entities:
             entities = message.entities or message.caption_entities
 
+        if not entities:
+            return []
+
         if message.text or message.caption:
             text = message.text or message.caption
-
-        print(type(entities))
 
         entity_objects = [MessageEntity(**ent) for ent in entities]
 
