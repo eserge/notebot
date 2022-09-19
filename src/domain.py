@@ -13,21 +13,26 @@ def process_message(message: Message) -> None:
     mc = MessageChain()
     mc.attempt_to_append(message)
     note = Note(mc)
-    sendNote(note)
+    save(note)
 
 
-def sendNote(note: Note) -> None:
-    save_to_html(note)
+def save(note: Note) -> None:
+    note_content = render_html(note)
+    save_to_file(note_content)
 
 
-def save_to_html(note: Note):
+def render_html(note: Note) -> str:
     template = Template(filename="tpl/note.mako")
     data = _gather_note_data(note)
 
     output = template.render(**data)
-    filename = _get_file_name(note)
+    return output
+
+
+def save_to_file(content: str) -> None:
+    filename = _get_file_name()
     with open(f"notes/{filename}", "w") as f:
-        f.write(output)
+        f.write(content)
         f.flush()
     print(f"{filename} saved!")
 
@@ -44,6 +49,6 @@ def _gather_note_data(note: Note) -> dict:
     return data
 
 
-def _get_file_name(note: Note) -> str:
+def _get_file_name() -> str:
     today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    return f"{today}-{note.id}.html"
+    return f"{today}.html"
