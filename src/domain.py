@@ -1,8 +1,8 @@
-from datetime import datetime, timezone
 from mako.template import Template
 
 from entities import Message, Update
 from models import MessageChain, Note
+from transport import save_to_file, send_email
 
 
 def get_message(update: Update) -> Message:
@@ -19,6 +19,7 @@ def process_message(message: Message) -> None:
 def save(note: Note) -> None:
     note_content = render_html(note)
     save_to_file(note_content)
+    send_email("Saved via saveminote", note_content)
 
 
 def render_html(note: Note) -> str:
@@ -27,14 +28,6 @@ def render_html(note: Note) -> str:
 
     output = template.render(**data)
     return output
-
-
-def save_to_file(content: str) -> None:
-    filename = _get_file_name()
-    with open(f"notes/{filename}", "w") as f:
-        f.write(content)
-        f.flush()
-    print(f"{filename} saved!")
 
 
 def _gather_note_data(note: Note) -> dict:
@@ -47,8 +40,3 @@ def _gather_note_data(note: Note) -> dict:
         data["links"] = note.links
 
     return data
-
-
-def _get_file_name() -> str:
-    today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    return f"{today}.html"
