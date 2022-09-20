@@ -13,6 +13,7 @@ pyngrok = "^5.1.0"
 attrs = "^22.1.0"
 Mako = "^1.2.2"
 yagmail = "^0.15.293"
+evernote3 = "^1.25.14"
 
 [tool.poetry.dev-dependencies]
 pudb = "^2022.1.2"

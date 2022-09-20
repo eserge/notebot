@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     smtp_user: str
     smtp_pass: str
     evernote_email: str
+    evernote_consumer_key: str
+    evernote_consumer_secret: str
+    evernote_auth_token: str
 
 
 def get_settings() -> Settings:
