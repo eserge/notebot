@@ -1,6 +1,4 @@
 <%! import mako_filters as filters  %>
-<html>
-<body>
 % if message_link:
 <p><a href="${message_link}">${message_link}</a></p>
 % else:
@@ -17,5 +15,3 @@
     % endfor
 </ul>
 % endif
-</body>
-</html>

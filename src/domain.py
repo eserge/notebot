@@ -2,7 +2,7 @@ from mako.template import Template
 
 from entities import Message, Update
 from models import MessageChain, Note
-from transport import save_to_file, send_email
+from transport import save_to_file, send_to_evernote
 
 
 def get_message(update: Update) -> Message:
@@ -19,7 +19,7 @@ def process_message(message: Message) -> None:
 def save(note: Note) -> None:
     note_content = render_html(note)
     save_to_file(note_content)
-    send_email("Saved via saveminote", note_content)
+    send_to_evernote("Saved via notebot", note_content)
 
 
 def render_html(note: Note) -> str:
