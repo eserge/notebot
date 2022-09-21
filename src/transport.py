@@ -1,6 +1,3 @@
-import binascii
-import hashlib
-import os
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -8,6 +5,7 @@ import yagmail
 import evernote.edam.userstore.constants as UserStoreConstants
 import evernote.edam.type.ttypes as Types
 from evernote.api.client import EvernoteClient
+from mako.template import Template
 
 from config import get_settings
 
@@ -61,20 +59,12 @@ def send_to_evernote(title: str, content: str) -> Optional[str]:
     note_store = client.get_note_store()
     print("Creating a new note in the default notebook")
 
+    template = Template(filename="tpl/evernote.mako")
+
     note = Types.Note()
     note.title = title
-
-    # The content of an Evernote note is represented using Evernote Markup Language
-    # (ENML). The full ENML specification can be found in the Evernote API Overview
-    # at http://dev.evernote.com/documentation/cloud/chapters/ENML.php
-    note.content = '<?xml version="1.0" encoding="UTF-8"?>'
-    note.content += (
-        "<!DOCTYPE en-note SYSTEM " '"http://xml.evernote.com/pub/enml2.dtd">'
-    )
-    note.content += "<en-note>"
-    note.content += content
-    note.content += "</en-note>"
-
+    note.content = template.render(content=content).strip()
     created_note = note_store.createNote(note)
+
     print("Successfully created a new note with GUID: ", created_note.guid)
     return created_note.guid
