@@ -1,26 +1,12 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-import yagmail
 import evernote.edam.userstore.constants as UserStoreConstants
 import evernote.edam.type.ttypes as Types
 from evernote.api.client import EvernoteClient
 from mako.template import Template
 
 from config import get_settings
-
-
-def send_email(subject: str, message: str) -> bool:
-    settings = get_settings()
-    yag = yagmail.SMTP(settings.smtp_user, settings.smtp_pass)
-    errors = yag.send(settings.evernote_email, subject, message)
-    if not errors:
-        print(f"Sent '{subject}' successfully")
-    else:
-        print(f"Failed to send '{subject}'")
-        return False
-
-    return True
 
 
 def save_to_file(content: str) -> None:
