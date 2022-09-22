@@ -24,6 +24,7 @@ class MessageChain:
 
 class MessageAdapter:
     LINK_ENTITY_TYPE = "text_link"
+    MAX_HEADER_LENGTH = 50
 
     @staticmethod
     def get_text(messages: Messages) -> List[str]:
@@ -37,7 +38,7 @@ class MessageAdapter:
 
     @staticmethod
     def parse_text(text: str) -> List[str]:
-        # split text into paragraphs, where they're denoted
+        # split text into paragraphs, denoted
         # by a sequence of 2 or more \n chars
         paragraphs = re.split("\n{2,}", text)
         return paragraphs
@@ -87,11 +88,17 @@ class MessageAdapter:
     def get_link_text(entity: MessageEntity, message: str) -> str:
         return message[entity.offset : entity.offset + entity.length]
 
+    @staticmethod
+    def get_header(messages: Messages) -> str:
+        texts = MessageAdapter.get_text(messages)
+        return texts[0][: MessageAdapter.MAX_HEADER_LENGTH].split("\n")[0]
+
 
 class Note:
     """
     An abstract representation of a note.
-    Text consisting of a list of paragraphs.
+    Text consisting of a list of paragraphs,
+    Header,
     Attached files and photos
     """
 
@@ -116,3 +123,7 @@ class Note:
     @property
     def links(self) -> List[str]:
         return self.adapter.links(self.messages)
+
+    @property
+    def header(self) -> str:
+        return self.adapter.get_header(self.messages)

@@ -19,7 +19,7 @@ def process_message(message: Message) -> None:
 def save(note: Note) -> None:
     note_content = render_html(note)
     save_to_file(note_content)
-    send_to_evernote("Saved via notebot", note_content)
+    send_to_evernote(note.header, note_content)
 
 
 def render_html(note: Note) -> str:
@@ -33,6 +33,7 @@ def render_html(note: Note) -> str:
 def _gather_note_data(note: Note) -> dict:
     data = {
         "text": note.text,
+        "header": note.header,
     }
     if note.message_link:
         data["message_link"] = note.message_link
