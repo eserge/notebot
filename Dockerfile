@@ -1,4 +1,4 @@
-FROM python:3.9 as python-base
+FROM python:3.10 as python-base
 
 # https://python-poetry.org/docs#ci-recommendations
 ENV POETRY_HOME=/opt/poetry
@@ -15,17 +15,8 @@ RUN python3 -m venv $POETRY_VENV \
     && $POETRY_VENV/bin/pip install -U pip setuptools \
     && $POETRY_VENV/bin/pip install poetry
 
-# Create a new stage from the base python image
-FROM python-base as python-w-ngrok
-
-RUN curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
-    | tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
-    && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
-    | tee /etc/apt/sources.list.d/ngrok.list \
-    && apt update && apt install ngrok
-
 # Create application layer image
-FROM python-w-ngrok as saveminote
+FROM poetry-base as saveminote
 
 # Copy Poetry to app image
 COPY --from=poetry-base ${POETRY_VENV} ${POETRY_VENV}
@@ -46,3 +37,5 @@ RUN poetry install --no-interaction --no-cache --no-dev
 
 # Copy Application
 COPY src/ /app
+
+CMD ["poetry", "run", "uvicorn", "app:app"]
