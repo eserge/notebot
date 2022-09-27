@@ -1,4 +1,10 @@
-# Naming conventions
+# Running
+Example
+```
+uvicorn --host localhost --port 8000 app:app
+```
+
+# Branch labels
 Commit messages have several tags, which I put in the beginning of a message.
 - `ft` - new functionality, feature
 - `fix` - bug fix
