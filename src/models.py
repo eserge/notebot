@@ -1,11 +1,13 @@
+from optparse import Option
 import re
-from typing import Deque, List, Optional
+from typing import Any, Deque, Dict, List, Optional
 
 import attrs
 from collections import deque
 from entities import Message, MessageEntity
 
 Messages = List[Message]
+Link = Dict[str, Optional[str]]
 
 
 @attrs.define
@@ -27,17 +29,17 @@ class MessageAdapter:
     MAX_HEADER_LENGTH = 50
 
     @staticmethod
-    def get_text(messages: Messages) -> List[str]:
+    def get_text(messages: Messages) -> List[str | Any]:
         message = messages[0]
         if message.text:
             text = message.text
-        if message.caption:
+        elif message.caption:
             text = message.caption
 
         return MessageAdapter.parse_text(text)
 
     @staticmethod
-    def parse_text(text: str) -> List[str]:
+    def parse_text(text: str) -> List[str | Any]:
         # split text into paragraphs, denoted
         # by a sequence of 2 or more \n chars
         paragraphs = re.split("\n{2,}", text)
@@ -63,7 +65,7 @@ class MessageAdapter:
         return message.message_id
 
     @staticmethod
-    def links(messages: Messages) -> List[str]:
+    def links(messages: Messages) -> List[Link]:
         message = messages[0]
         entities = None
         print(message)
@@ -76,7 +78,7 @@ class MessageAdapter:
         if message.text or message.caption:
             text = message.text or message.caption
 
-        entity_objects = [MessageEntity(**ent) for ent in entities]
+        entity_objects = [MessageEntity(**ent) for ent in iter(entities)]
 
         return [
             {"url": entity.url, "text": MessageAdapter.get_link_text(entity, text)}
@@ -85,7 +87,9 @@ class MessageAdapter:
         ]
 
     @staticmethod
-    def get_link_text(entity: MessageEntity, message: str) -> str:
+    def get_link_text(entity: MessageEntity, message: Optional[str]) -> Optional[str]:
+        if not message:
+            return entity.url
         return message[entity.offset : entity.offset + entity.length]
 
     @staticmethod
@@ -113,7 +117,7 @@ class Note:
         return self.adapter.get_text(self.messages)
 
     @property
-    def message_link(self) -> str:
+    def message_link(self) -> Optional[str]:
         return self.adapter.get_link(self.messages)
 
     @property
@@ -121,7 +125,7 @@ class Note:
         return self.adapter.get_id(self.messages)
 
     @property
-    def links(self) -> List[str]:
+    def links(self) -> List[Link]:
         return self.adapter.links(self.messages)
 
     @property

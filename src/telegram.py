@@ -17,7 +17,7 @@ class Telegram:
         result = loop.run_until_complete(self._request_webhook(public_webhook_url))
         return result
 
-    async def send_message(self, chat_id, text):
+    async def send_message(self, chat_id, text) -> bool:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 self._get_api_send_message_url(),
@@ -36,13 +36,13 @@ class Telegram:
 
         return response.status_code == HTTPStatus.OK
 
-    def _get_api_url_base(self):
+    def _get_api_url_base(self) -> str:
         return f"{self.API_URL_BASE}{self.token}/"
 
-    def _get_api_set_webhook_url(self):
+    def _get_api_set_webhook_url(self) -> str:
         return f"{self._get_api_url_base()}setWebhook"
 
-    def _get_api_send_message_url(self):
+    def _get_api_send_message_url(self) -> str:
         return f"{self._get_api_url_base()}sendMessage"
 
     def get_webhook_url(self) -> str:

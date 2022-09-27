@@ -40,7 +40,7 @@ def send_to_evernote(title: str, content: str) -> Optional[str]:
     )
     print("Is my Evernote API version up to date? ", str(version_ok))
     if not version_ok:
-        return
+        return None
 
     note_store = client.get_note_store()
     print("Creating a new note in the default notebook")
