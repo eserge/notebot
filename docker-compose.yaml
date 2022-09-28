@@ -1,0 +1,34 @@
+services:
+  notebot:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file:
+      - ".deploy/.envfile"
+    ports:
+      - 8000:80
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.notebot.rule=Host(`notebot.docker.localhost`)
+  reverse-proxy:
+    # The official v2 Traefik docker image
+    image: traefik:v2.8
+    command:
+      # Enable Docker in Traefik, so that it reads labels from Docker services
+      - --providers.docker
+      # Do not expose all Docker services, only the ones explicitly exposed
+      - --providers.docker.exposedbydefault=false
+      # Create an entrypoint "http" listening on port 80
+      - --entrypoints.http.address=:80
+      # Enable the access log, with HTTP requests
+      - --accesslog
+      # Enable the Traefik log, for configurations and errors
+      - --log
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
