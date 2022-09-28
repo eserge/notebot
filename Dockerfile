@@ -27,7 +27,7 @@ ENV PATH="${PATH}:${POETRY_VENV}/bin"
 WORKDIR /app
 
 # Copy Dependencies Declaration
-COPY poetry.lock pyproject.toml ./
+COPY poetry.lock pyproject.toml Makefile ./
 
 # [OPTIONAL] Validate the project is properly configured
 RUN poetry check
@@ -38,4 +38,4 @@ RUN poetry install --no-interaction --no-cache --no-dev
 # Copy Application
 COPY src/ /app
 
-CMD ["poetry", "run", "uvicorn", "app:app"]
+ENTRYPOINT [ "make", "server" ]
