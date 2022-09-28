@@ -15,7 +15,3 @@ install-deps:
 
 .PHONY: install
 install: install-poetry config-poetry install-deps
-
-.PHONY: server
-server:
-	@$(POETRY) run uvicorn app:app --host $(APP_HOST)

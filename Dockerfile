@@ -27,7 +27,7 @@ ENV PATH="${PATH}:${POETRY_VENV}/bin"
 WORKDIR /app
 
 # Copy Dependencies Declaration
-COPY poetry.lock pyproject.toml Makefile ./
+COPY poetry.lock pyproject.toml entrypoint.sh ./
 
 # [OPTIONAL] Validate the project is properly configured
 RUN poetry check
@@ -38,4 +38,4 @@ RUN poetry install --no-interaction --no-cache --no-dev
 # Copy Application
 COPY src/ /app
 
-ENTRYPOINT [ "make", "server" ]
+ENTRYPOINT [ "./entrypoint.sh" ]
