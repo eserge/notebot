@@ -12,10 +12,27 @@ class Telegram:
 
     API_URL_BASE = "https://api.telegram.org/bot"
 
-    def install_webhook(self, public_webhook_url) -> bool:
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(self._request_webhook(public_webhook_url))
-        return result
+    async def delete_webhook(self) -> bool:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(self._get_api_delete_webhook_url())
+
+        return response.status_code == HTTPStatus.OK
+
+    async def install_webhook(self, webhook_url: str) -> bool:
+        payload = {
+            "url": webhook_url,
+            "secret_token": self.secret,
+        }
+        async with httpx.AsyncClient() as client:
+            response = await client.post(self._get_api_set_webhook_url(), data=payload)
+
+        return response.status_code == HTTPStatus.OK
+
+    async def webhook_info(self):
+        async with httpx.AsyncClient() as client:
+            response = await client.post(self._get_api_set_webhook_url())
+
+        return response
 
     async def send_message(self, chat_id, text) -> bool:
         async with httpx.AsyncClient() as client:
@@ -26,21 +43,17 @@ class Telegram:
 
         return response.status_code == HTTPStatus.OK
 
-    async def _request_webhook(self, webhook_url: str) -> bool:
-        payload = {
-            "url": webhook_url,
-            "secret_token": self.secret,
-        }
-        async with httpx.AsyncClient() as client:
-            response = await client.post(self._get_api_set_webhook_url(), data=payload)
-
-        return response.status_code == HTTPStatus.OK
-
     def _get_api_url_base(self) -> str:
         return f"{self.API_URL_BASE}{self.token}/"
 
     def _get_api_set_webhook_url(self) -> str:
         return f"{self._get_api_url_base()}setWebhook"
+
+    def _get_api_delete_webhook_url(self) -> str:
+        return f"{self._get_api_url_base()}deleteWebhook"
+
+    def _get_api_webhook_info_url(self) -> str:
+        return f"{self._get_api_url_base()}getWebhookInfo"
 
     def _get_api_send_message_url(self) -> str:
         return f"{self._get_api_url_base()}sendMessage"
