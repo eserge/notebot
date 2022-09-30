@@ -1,10 +1,11 @@
-from optparse import Option
 import re
 from typing import Any, Deque, Dict, List, Optional
 
 import attrs
+
+import auth
 from collections import deque
-from entities import Message, MessageEntity
+from entities import Message, MessageEntity, Update
 
 Messages = List[Message]
 Link = Dict[str, Optional[str]]
@@ -131,3 +132,21 @@ class Note:
     @property
     def header(self) -> str:
         return self.adapter.get_header(self.messages)
+
+
+@attrs.define
+class User:
+    id: str
+    auth_token: Optional[str]
+
+    def is_authenticated(self):
+        return self.evernote_token is not None
+
+
+def get_user_from_update(update: Update) -> User:
+    assert update.message
+    assert update.message.from_user
+
+    user_id = str(update.message.from_user.id)
+    auth_token = auth.get_token(user_id)
+    return User(user_id, auth_token)

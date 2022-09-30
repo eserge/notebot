@@ -2,27 +2,38 @@ from typing import Any, Dict, Optional
 from mako.template import Template
 
 from entities import Message, Update
-from models import MessageChain, Note
+from models import MessageChain, Note, User, get_user_from_update
 from transport import save_to_file, send_to_evernote
+
+
+class NotAuthorized(Exception):
+    pass
+
+
+def process_update(update: Update) -> None:
+    message = get_message(update)
+    if not message:
+        return None
+
+    user = get_user_from_update(update)
+    if not user.auth_token:
+        raise NotAuthorized
+
+    mc = MessageChain()
+    mc.attempt_to_append(message)
+    note = Note(mc)
+
+    save(note, user)
 
 
 def get_message(update: Update) -> Optional[Message]:
     return update.message
 
 
-def process_message(message: Optional[Message]) -> None:
-    if not message:
-        return None
-    mc = MessageChain()
-    mc.attempt_to_append(message)
-    note = Note(mc)
-    save(note)
-
-
-def save(note: Note) -> None:
+def save(note: Note, user: User) -> None:
     note_content = render_html(note)
     save_to_file(note_content)
-    send_to_evernote(note.header, note_content)
+    send_to_evernote(note.header, note_content, user.auth_token)
 
 
 def render_html(note: Note) -> str:

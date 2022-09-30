@@ -1,7 +1,6 @@
 from evernote.api.client import EvernoteClient
 
 from entities import Update
-from telegram import Telegram
 from config import get_settings
 
 

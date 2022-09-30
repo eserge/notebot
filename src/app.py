@@ -4,9 +4,10 @@ from typing import Any, Callable, Coroutine, Dict, NamedTuple, Optional
 from evernote.api.client import EvernoteClient
 from fastapi import FastAPI
 
+import auth
 from config import get_settings
 from commands import ping, auth
-from domain import process_message, get_message
+from domain import process_update, get_message
 from entities import Update
 from telegram import Telegram
 
@@ -118,8 +119,7 @@ async def webhook(update: Update):
     if handler:
         await handler(update, get_connections())
     else:
-        message = get_message(update)
-        process_message(message)
+        process_update(update)
         await confirm_message_saved(update)
 
     return {}
