@@ -1,3 +1,7 @@
+# What is it for?
+This software is for those, who happened to use both Telegram and Evernote a lot, just like me.
+It's a Telegram bot, that saves any message as a note in Evernote.
+
 # Running
 Example
 ```
