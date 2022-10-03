@@ -1,37 +1,50 @@
-import collections
-from typing import Any, Callable, Coroutine, Dict, NamedTuple, Optional
+import os
+from sqlite3 import adapters
+from typing import Any, Callable, Coroutine, Dict, Optional
 
+import attrs
+import pickledb
 from evernote.api.client import EvernoteClient
 from fastapi import FastAPI
 
-import auth
 from config import get_settings
 from commands import ping, auth
 from domain import process_update, get_message
 from entities import Update
+from repo import Users, AuthRequests
 from telegram import Telegram
 
 
 settings = get_settings()
-telegram = Telegram(settings.telegram_token, settings.telegram_secret)
+db = pickledb.load(
+    os.path.join(settings.app_data_dir, settings.app_data_filename), auto_dump=True
+)
 app = FastAPI()
-storage = {}
-_connections = None
+
+telegram = Telegram(settings.telegram_token, settings.telegram_secret)
+users = Users(db=db)
+auth_requests = AuthRequests(db=db)
 
 
-def get_connections():
-    global _connections
-    if not _connections:
-        Connections = collections.namedtuple(
-            "Connections",
-            [
-                "telegram",
-                "storage",
-            ],
+@attrs.define
+class Adapters:
+    app: FastAPI
+    telegram: Telegram
+    users: Users
+    auth_requests: AuthRequests
+
+
+_adapters = None
+
+
+def get_adapters():
+    global _adapters
+    if not _adapters:
+        _adapters = Adapters(
+            app=app, telegram=telegram, users=users, auth_requests=auth_requests
         )
-        _connections = Connections(telegram=telegram, storage=storage)
 
-    return _connections
+    return _adapters
 
 
 @app.get("/healthcheck/")
@@ -46,16 +59,18 @@ async def callback(
     oauth_verifier: str | None = None,
     sandbox_lnb: bool | None = None,
 ):
-    page_data = {
+    callback_data = {
         "callback_id": callback_id,
         "oauth_token": oauth_token,
         "oauth_verifier": oauth_verifier,
         "sandbox_lnb": sandbox_lnb,
     }
-    conns = get_connections()
-    if callback_id in conns.storage:
-        saved_data = conns.storage[callback_id]
-        print(saved_data, page_data)
+    auth_requests = get_adapters().auth_requests
+    telegram = get_adapters().telegram
+
+    if saved_data := auth_requests.get(callback_id):
+        user_id = saved_data.get("user_id")
+        print(saved_data, callback_data)
 
         client = EvernoteClient(
             consumer_key=settings.evernote_consumer_key,
@@ -69,14 +84,14 @@ async def callback(
         )
         evernote_user = client.get_user_store().getUser()
         print(access_token)
-        await conns.telegram.send_message(
+        await telegram.send_message(
             saved_data["chat_id"],
             f"Hello, {evernote_user.username}!\nYou have been authorized",
         )
 
-        return {**page_data, **saved_data, "username": evernote_user.username}
+        users.set(str(user_id), users.create_user(user_id, access_token))
 
-    return page_data
+    return callback_data
 
 
 COMMANDS = {
@@ -85,6 +100,19 @@ COMMANDS = {
 }
 
 print(f"Installed commands: {COMMANDS.keys()}")
+
+
+@app.post(telegram.get_webhook_url())
+async def webhook(update: Update):
+    adapters = get_adapters()
+    command_handler = dispatch_command(update)
+    if command_handler:
+        await command_handler(update, adapters)
+    else:
+        process_update(update, adapters.users)
+        await confirm_message_saved(update, adapters)
+
+    return {}
 
 
 def dispatch_command(
@@ -113,22 +141,10 @@ def _is_command(command: Optional[str]) -> bool:
     return command in COMMANDS
 
 
-@app.post(telegram.get_webhook_url())
-async def webhook(update: Update):
-    handler = dispatch_command(update)
-    if handler:
-        await handler(update, get_connections())
-    else:
-        process_update(update)
-        await confirm_message_saved(update)
-
-    return {}
-
-
-async def confirm_message_saved(update: Update):
+async def confirm_message_saved(update: Update, adapters: Adapters):
     assert update.message is not None
     assert update.message.chat is not None
 
     CONFIRMATION_TEXT = "Saved!"
     chat_id = update.message.chat.id
-    await telegram.send_message(chat_id, CONFIRMATION_TEXT)
+    await adapters.telegram.send_message(chat_id, CONFIRMATION_TEXT)

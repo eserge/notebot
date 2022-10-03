@@ -2,7 +2,8 @@ from typing import Any, Dict, Optional
 from mako.template import Template
 
 from entities import Message, Update
-from models import MessageChain, Note, User, get_user_from_update
+from models import MessageChain, Note, User
+from repo import Users, get_user_from_update
 from transport import save_to_file, send_to_evernote
 
 
@@ -10,13 +11,13 @@ class NotAuthorized(Exception):
     pass
 
 
-def process_update(update: Update) -> None:
+def process_update(update: Update, users: Users) -> None:
     message = get_message(update)
     if not message:
         return None
 
-    user = get_user_from_update(update)
-    if not user.auth_token:
+    user = get_user_from_update(update, users)
+    if not user or not user.auth_token:
         raise NotAuthorized
 
     mc = MessageChain()

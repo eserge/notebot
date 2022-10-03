@@ -3,7 +3,6 @@ from typing import Any, Deque, Dict, List, Optional
 
 import attrs
 
-import auth
 from collections import deque
 from entities import Message, MessageEntity, Update
 
@@ -140,13 +139,4 @@ class User:
     auth_token: Optional[str]
 
     def is_authenticated(self):
-        return self.evernote_token is not None
-
-
-def get_user_from_update(update: Update) -> User:
-    assert update.message
-    assert update.message.from_user
-
-    user_id = str(update.message.from_user.id)
-    auth_token = auth.get_token(user_id)
-    return User(user_id, auth_token)
+        return self.auth_token is not None
