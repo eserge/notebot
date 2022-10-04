@@ -6,8 +6,6 @@ class Settings(BaseSettings):
     app_port: int = 8000
     app_data_dir: str = "/data/"
     app_data_filename = "data.db"
-    app_data_secret: str
-    evernote_auth_token: str
     evernote_consumer_key: str
     evernote_consumer_secret: str
     evernote_sandbox_enabled: bool = True
