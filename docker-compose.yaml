@@ -25,6 +25,8 @@ services:
       - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
       # Middleware to redirect HTTP to HTTPS
       - traefik.http.routers.app-http.middlewares=https-redirect
+    volumes:
+      - data:/data/
   reverse-proxy:
     # The official v2 Traefik docker image
     image: traefik:v2.8
@@ -87,4 +89,6 @@ services:
 
 volumes:
   traefik-public-certificates:
+    external: false
+  data:
     external: false
