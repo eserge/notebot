@@ -60,6 +60,10 @@ class AuthRequests(AbstractRepo):
         key = self._get_key(callback_id)
         self.db.set(key, data)
 
+    def unset(self, callback_id) -> None:
+        key = self._get_key(callback_id)
+        self.db.rem(key)
+
 
 def get_user_from_update(update: Update, users: Users) -> User:
     assert update.message

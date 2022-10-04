@@ -4,7 +4,7 @@ from typing import Any, Deque, Dict, List, Optional
 import attrs
 
 from collections import deque
-from entities import Message, MessageEntity, Update
+from entities import Message, MessageEntity
 
 Messages = List[Message]
 Link = Dict[str, Optional[str]]

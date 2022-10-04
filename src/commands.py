@@ -1,7 +1,12 @@
+import secrets
+
 from evernote.api.client import EvernoteClient
 
 from entities import Update
-from config import get_settings
+from config import get_settings, Settings
+
+
+TOKEN_LENGTH = 16
 
 
 async def ping(update: Update, adapters):
@@ -22,13 +27,13 @@ async def auth(update: Update, adapters):
     user = update.message.from_user
     settings = get_settings()
 
-    callback_id = "randomToken123"
-    callback_url = "http://%s%s" % ("localhost:8000", f"/callback/{callback_id}")
+    callback_id = generate_token()
+    callback_url = get_callback_url(callback_id, settings)
 
     client = EvernoteClient(
         consumer_key=settings.evernote_consumer_key,
         consumer_secret=settings.evernote_consumer_secret,
-        sandbox=True,
+        sandbox=settings.evernote_sandbox_enabled,
     )
     request_token = client.get_request_token(callback_url)
     auth_url = client.get_authorize_url(request_token)
@@ -41,5 +46,21 @@ async def auth(update: Update, adapters):
     }
     adapters.auth_requests.set(callback_id, data)
 
-    AUTH_RESPONSE = f"Starting auth for chat.id = {chat.id},\nPlease go to: {auth_url}"
+    AUTH_RESPONSE = (
+        f"Starting authentication process.\n"
+        f"Please open this link to confirm Evernote access: {auth_url}"
+    )
     return await adapters.telegram.send_message(chat.id, AUTH_RESPONSE)
+
+
+def generate_token():
+    return secrets.token_urlsafe(TOKEN_LENGTH)
+
+
+def get_callback_url(callback_id: str, settings: Settings):
+    production = False if settings.app_host == "localhost" else True
+    schema = "https" if production else "http"
+    host = settings.app_host
+    port = "" if production else f":{settings.app_port}"
+
+    return f"{schema}://{host}{port}/callback/{callback_id}"

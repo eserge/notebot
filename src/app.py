@@ -6,6 +6,8 @@ import attrs
 import pickledb
 from evernote.api.client import EvernoteClient
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from mako.template import Template
 
 from config import get_settings
 from commands import ping, auth
@@ -52,13 +54,18 @@ async def healthcheck() -> Dict:
     return {"healthcheck": "OK"}
 
 
-@app.get("/callback/{callback_id}")
+@app.get("/callback/{callback_id}", response_class=HTMLResponse)
 async def callback(
     callback_id: str,
     oauth_token: str | None = None,
     oauth_verifier: str | None = None,
     sandbox_lnb: bool | None = None,
 ):
+    if not oauth_verifier:
+        # If oauth_verifier is missing, user chose not to
+        # authorize our bot, or something went wrong
+        return Template(filename="tpl/auth_fail.mako").render()
+
     callback_data = {
         "callback_id": callback_id,
         "oauth_token": oauth_token,
@@ -72,16 +79,20 @@ async def callback(
         user_id = saved_data.get("user_id")
         print(saved_data, callback_data)
 
-        client = EvernoteClient(
-            consumer_key=settings.evernote_consumer_key,
-            consumer_secret=settings.evernote_consumer_secret,
-            sandbox=True,
-        )
-        access_token = client.get_access_token(
-            oauth_token=saved_data["oauth_token"],
-            oauth_token_secret=saved_data["oauth_token_secret"],
-            oauth_verifier=oauth_verifier,
-        )
+        try:
+            client = EvernoteClient(
+                consumer_key=settings.evernote_consumer_key,
+                consumer_secret=settings.evernote_consumer_secret,
+                sandbox=settings.evernote_sandbox_enabled,
+            )
+            access_token = client.get_access_token(
+                oauth_token=saved_data["oauth_token"],
+                oauth_token_secret=saved_data["oauth_token_secret"],
+                oauth_verifier=oauth_verifier,
+            )
+        except KeyError:
+            return Template(filename="tpl/auth_fail.mako").render()
+
         evernote_user = client.get_user_store().getUser()
         print(access_token)
         await telegram.send_message(
@@ -90,8 +101,11 @@ async def callback(
         )
 
         users.set(str(user_id), users.create_user(user_id, access_token))
+        auth_requests.unset(callback_id)
 
-    return callback_data
+        return Template(filename="tpl/auth_success.mako").render()
+
+    return Template(filename="tpl/auth_fail.mako").render()
 
 
 COMMANDS = {
