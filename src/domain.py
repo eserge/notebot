@@ -33,6 +33,8 @@ def get_message(update: Update) -> Optional[Message]:
 
 
 def save(note: Note, user: User) -> None:
+    assert user.auth_token
+
     note_content = render_html(note)
     save_to_file(note_content)
     send_to_evernote(note.header, note_content, user.auth_token)

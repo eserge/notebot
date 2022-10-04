@@ -65,7 +65,7 @@ class AuthRequests(AbstractRepo):
         self.db.rem(key)
 
 
-def get_user_from_update(update: Update, users: Users) -> User:
+def get_user_from_update(update: Update, users: Users) -> Optional[User]:
     assert update.message
     assert update.message.from_user
 

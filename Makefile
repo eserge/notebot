@@ -1,4 +1,5 @@
 POETRY ?= poetry
+SOURCE_DIRS ?= src
 
 .PHONY: install-poetry
 install-poetry:
@@ -11,7 +12,22 @@ configure-poetry:
 
 .PHONY: install-deps
 install-deps:
-	@$(POETRY) install --no-dev -vv
+	@$(POETRY) install -vv
 
 .PHONY: install
 install: install-poetry config-poetry install-deps
+
+.PHONY: lint-black
+lint-black:
+	@$(POETRY) run black $(SOURCE_DIRS)
+
+.PHONY: lint-isort
+lint-isort:
+	@$(POETRY) run isort $(SOURCE_DIRS)
+
+.PHONY: lint-mypy
+lint-mypy:
+	@$(POETRY) run mypy $(SOURCE_DIRS)
+
+.PHONY: lint
+lint: lint-black lint-isort lint-mypy

@@ -130,11 +130,13 @@ async def webhook(update: Update):
 
 def dispatch_command(
     update: Update,
-) -> Optional[Callable[[Update], Coroutine[Any, Any, Any]]]:
+) -> Optional[Callable[[Update, Any], Coroutine[Any, Any, Any]]]:
     if not update.message:
         return None
 
     command = update.message.text
+    assert command
+
     print(command)
     if _is_command(command):
         return COMMANDS[command]
