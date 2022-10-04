@@ -1,4 +1,5 @@
 from typing import Any, Dict, Optional
+
 from mako.template import Template
 
 from entities import Message, Update

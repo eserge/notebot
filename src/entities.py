@@ -2,7 +2,8 @@
 # https://github.com/isys35/pyteledantic/blob/master/pyteledantic/models.py
 
 from datetime import datetime
-from typing import Optional, Union, List
+from typing import List, Optional, Union
+
 from pydantic import BaseModel, Field, validator
 
 

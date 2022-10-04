@@ -1,12 +1,11 @@
 import asyncio
 import sys
 
-import uvicorn
 import typer
+import uvicorn
 from pyngrok import ngrok
 
-from app import telegram, settings
-
+from app import settings, telegram
 
 app = typer.Typer()
 

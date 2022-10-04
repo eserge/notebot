@@ -1,8 +1,8 @@
 import asyncio
+
 import typer
 
-from app import telegram, settings
-
+from app import settings, telegram
 
 app = typer.Typer()
 

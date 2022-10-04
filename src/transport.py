@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-import evernote.edam.userstore.constants as UserStoreConstants
 import evernote.edam.type.ttypes as Types
+import evernote.edam.userstore.constants as UserStoreConstants
 from evernote.api.client import EvernoteClient
 from mako.template import Template
 

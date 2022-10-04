@@ -1,9 +1,9 @@
 import re
+from collections import deque
 from typing import Any, Deque, Dict, List, Optional
 
 import attrs
 
-from collections import deque
 from entities import Message, MessageEntity
 
 Messages = List[Message]

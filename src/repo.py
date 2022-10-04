@@ -1,10 +1,10 @@
 import abc
-from typing import Any, Optional
-
-from models import User
-from entities import Update
+from typing import Optional
 
 from pickledb import PickleDB
+
+from entities import Update
+from models import User
 
 
 class AbstractRepo(abc.ABC):

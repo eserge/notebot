@@ -9,13 +9,12 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from mako.template import Template
 
+from commands import auth, ping
 from config import get_settings
-from commands import ping, auth
-from domain import process_update, get_message
+from domain import get_message, process_update
 from entities import Update
-from repo import Users, AuthRequests
+from repo import AuthRequests, Users
 from telegram import Telegram
-
 
 settings = get_settings()
 db = pickledb.load(

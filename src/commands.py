@@ -2,9 +2,8 @@ import secrets
 
 from evernote.api.client import EvernoteClient
 
+from config import Settings, get_settings
 from entities import Update
-from config import get_settings, Settings
-
 
 TOKEN_LENGTH = 16
 

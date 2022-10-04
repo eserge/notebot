@@ -1,8 +1,8 @@
 import json
 from datetime import datetime
 from typing import Dict
-from pydantic import BaseModel
 
+from pydantic import BaseModel
 
 DATETIME_ISO_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
