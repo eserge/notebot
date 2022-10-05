@@ -19,11 +19,11 @@ install: install-poetry config-poetry install-deps
 
 .PHONY: lint-black
 lint-black:
-	@$(POETRY) run black $(SOURCE_DIRS)
+	@$(POETRY) run black  --check --diff $(SOURCE_DIRS)
 
 .PHONY: lint-isort
 lint-isort:
-	@$(POETRY) run isort $(SOURCE_DIRS)
+	@$(POETRY) run isort --check-only --diff $(SOURCE_DIRS)
 
 .PHONY: lint-flake8
 lint-flake8:
