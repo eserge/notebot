@@ -17,37 +17,32 @@ class AbstractRepo(abc.ABC):
     def _get_key(self, key: str) -> str:
         return f"{self._namespace}{key}"
 
+    @abc.abstractmethod
     def get(self, key: str):
         ...
 
-    def set(self, key: str, data):
+    @abc.abstractmethod
+    def set(self, data) -> None:
         ...
 
 
 class Users(AbstractRepo):
     _namespace = "user:"
 
-    def get(self, user_id) -> Optional[User]:
-        key = self._get_key(user_id)
+    def get(self, id: str) -> Optional[User]:
+        key = self._get_key(id)
         user_data = self.db.get(key)
         if not user_data:
             return None
         return User(**user_data)
 
-    def set(self, user_id, user: User) -> None:
-        key = self._get_key(user_id)
-        data = {
-            "id": user.id,
-            "auth_token": user.auth_token,
-        }
-        self.db.set(key, data)
+    def set(self, user: User) -> None:
+        key = self._get_key(user.id)
+        self.db.set(key, attrs.asdict(user))
 
-    def exists(self, user_id) -> bool:
-        key = self._get_key(user_id)
+    def exists(self, id: str) -> bool:
+        key = self._get_key(id)
         return self.db.exists(key)
-
-    def create_user(self, user_id, auth_token) -> User:
-        return User(user_id, auth_token)
 
 
 class AuthRequests(AbstractRepo):

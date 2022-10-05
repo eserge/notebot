@@ -12,6 +12,7 @@ from commands import auth, ping
 from config import get_settings
 from domain import process_update
 from entities import Update
+from models import User
 from repo import AuthRequests, Users
 from telegram import Telegram
 
@@ -98,7 +99,8 @@ async def callback(
             f"Hello, {evernote_user.username}!\nYou have been authorized",
         )
 
-        users.set(str(user_id), users.create_user(user_id, access_token))
+        user = User(id=user_id, auth_token=access_token)
+        users.set(user)
         auth_requests.unset(callback_id)
 
         return Template(filename="tpl/auth_success.mako").render()
