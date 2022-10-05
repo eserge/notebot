@@ -37,6 +37,18 @@ ignore_missing_imports = true
 
 [tool.flake8]
 max-line-length = 88
+extend-ignore = [
+    # Indentation — black handles
+    "E1", "W1",
+    # Whitespace — black handles
+    "E2", "W2",
+    # Blank lines — black handles
+    "E3", "W3",
+    # Imports — isort handles
+    "E4", "W4",
+    # Line length — black handles
+    "E5", "W5",
+    "E731" ]
 
 [tool.isort]
 profile = "black"

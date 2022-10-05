@@ -1,5 +1,4 @@
 import os
-from sqlite3 import adapters
 from typing import Any, Callable, Coroutine, Dict, Optional
 
 import attrs
@@ -11,7 +10,7 @@ from mako.template import Template
 
 from commands import auth, ping
 from config import get_settings
-from domain import get_message, process_update
+from domain import process_update
 from entities import Update
 from repo import AuthRequests, Users
 from telegram import Telegram

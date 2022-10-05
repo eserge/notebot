@@ -25,9 +25,13 @@ lint-black:
 lint-isort:
 	@$(POETRY) run isort $(SOURCE_DIRS)
 
+.PHONY: lint-flake8
+lint-flake8:
+	@$(POETRY) run pflake8 $(SOURCE_DIRS)
+
 .PHONY: lint-mypy
 lint-mypy:
 	@$(POETRY) run mypy $(SOURCE_DIRS)
 
 .PHONY: lint
-lint: lint-black lint-isort lint-mypy
+lint: lint-black lint-isort lint-flake8 lint-mypy

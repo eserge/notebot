@@ -24,11 +24,12 @@ def _get_file_name() -> str:
 
 def send_to_evernote(title: str, content: str, auth_token: str) -> Optional[str]:
     settings = get_settings()
-    sandbox = True
     china = False
 
     # Hardcoded AuthToken should be replaced with OAuth flow
-    client = EvernoteClient(token=auth_token, sandbox=sandbox, china=china)
+    client = EvernoteClient(
+        token=auth_token, sandbox=settings.evernote_sandbox_enabled, china=china
+    )
     user_store = client.get_user_store()
 
     version_ok = user_store.checkVersion(
