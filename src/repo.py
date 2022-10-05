@@ -1,10 +1,11 @@
 import abc
 from typing import Optional
 
+import attrs
 from pickledb import PickleDB
 
 from entities import Update
-from models import User
+from models import AuthRequest, User
 
 
 class AbstractRepo(abc.ABC):
@@ -52,16 +53,17 @@ class Users(AbstractRepo):
 class AuthRequests(AbstractRepo):
     _namespace = "auth:"
 
-    def get(self, callback_id):
-        key = self._get_key(callback_id)
-        return self.db.get(key)
+    def get(self, id: str) -> Optional[AuthRequest]:
+        key = self._get_key(id)
+        data = self.db.get(key)
+        return AuthRequest(**data)
 
-    def set(self, callback_id, data) -> None:
-        key = self._get_key(callback_id)
-        self.db.set(key, data)
+    def set(self, auth_request: AuthRequest) -> None:
+        key = self._get_key(auth_request.id)
+        self.db.set(key, attrs.asdict(auth_request))
 
-    def unset(self, callback_id) -> None:
-        key = self._get_key(callback_id)
+    def unset(self, id: str) -> None:
+        key = self._get_key(id)
         self.db.rem(key)
 
 

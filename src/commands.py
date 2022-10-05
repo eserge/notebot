@@ -4,6 +4,7 @@ from evernote.api.client import EvernoteClient
 
 from config import Settings, get_settings
 from entities import Update
+from models import AuthRequest
 
 TOKEN_LENGTH = 16
 
@@ -38,12 +39,14 @@ async def auth(update: Update, adapters):
     auth_url = client.get_authorize_url(request_token)
 
     data = {
+        "id": callback_id,
         "chat_id": chat.id,
         "user_id": user.id,
         "oauth_token": request_token["oauth_token"],
         "oauth_token_secret": request_token["oauth_token_secret"],
     }
-    adapters.auth_requests.set(callback_id, data)
+    auth_request = AuthRequest(**data)
+    adapters.auth_requests.set(auth_request)
 
     AUTH_RESPONSE = (
         f"Starting authentication process.\n"

@@ -140,3 +140,12 @@ class User:
 
     def is_authenticated(self):
         return self.auth_token is not None
+
+
+@attrs.define
+class AuthRequest:
+    id: str
+    chat_id: str
+    user_id: str
+    oauth_token: str
+    oauth_token_secret: str
