@@ -1,0 +1,19 @@
+name: Default
+on: [push]
+
+jobs:
+  QualityGates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "3.10"
+      - uses: Gr1N/setup-poetry@v7
+      - run: poetry check
+      - run: make install-deps
+      - run: make lint-black
+      - run: make lint-isort
+      - run: make lint-flake8
+      - run: make lint-mypy
