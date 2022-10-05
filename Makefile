@@ -35,3 +35,14 @@ lint-mypy:
 
 .PHONY: lint
 lint: lint-black lint-isort lint-flake8 lint-mypy
+
+.PHONY: fmt-black
+fmt-black:
+	@$(POETRY) run black $(SOURCE_DIRS)
+
+.PHONY: fmt-isort
+fmt-isort:
+	@$(POETRY) run isort $(SOURCE_DIRS)
+
+.PHONY: fmt
+fmt: fmt-black fmt-isort

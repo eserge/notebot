@@ -8,6 +8,15 @@ Example
 uvicorn --host localhost --port 8000 app:app
 ```
 
+# Auto Format Before Committing
+```bash
+cat > .git/hooks/pre-commit<< EOF
+#!/usr/bin/env bash
+exec make fmt
+EOF
+chmod +x .git/hooks/pre-commit
+```
+
 # Commit labels
 Commit messages have several tags, which I put in the beginning of a message.
 - `ft` - new functionality, feature
