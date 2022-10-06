@@ -3,6 +3,7 @@ from typing import Any, Callable, Coroutine, Dict, Optional
 
 import attrs
 import pickledb
+import sentry_sdk
 from evernote.api.client import EvernoteClient
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
@@ -17,6 +18,14 @@ from repo import AuthRequests, Users
 from telegram import Telegram
 
 settings = get_settings()
+
+sentry_sdk.init(
+    dsn=settings.sentry_dsn,
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production,
+    traces_sample_rate=1.0,
+)
 db = pickledb.load(
     os.path.join(settings.app_data_dir, settings.app_data_filename), auto_dump=True
 )

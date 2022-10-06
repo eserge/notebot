@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     ngrok_bin_path: str = "/usr/local/bin/ngrok"
     telegram_secret: str
     telegram_token: str
+    sentry_dsn: str
 
 
 def get_settings() -> Settings:
