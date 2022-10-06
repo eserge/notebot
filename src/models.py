@@ -95,7 +95,9 @@ class MessageAdapter:
     @staticmethod
     def get_header(messages: Messages) -> str:
         texts = MessageAdapter.get_text(messages)
-        return texts[0][: MessageAdapter.MAX_HEADER_LENGTH].split("\n")[0]
+        header = texts[0][: MessageAdapter.MAX_HEADER_LENGTH].split("\n")[0]
+        header = header.replace("\u200b", "").strip()
+        return header
 
 
 class Note:
