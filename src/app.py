@@ -74,9 +74,9 @@ async def callback(
     auth_requests = get_adapters().auth_requests
     telegram = get_adapters().telegram
 
-    if saved_data := auth_requests.get(callback_id):
-        user_id = saved_data.get("user_id")
-        print(saved_data, callback_data)
+    if auth_request := auth_requests.get(callback_id):
+        user_id = auth_request.user_id
+        print(attrs.asdict(auth_request), callback_data)
 
         try:
             client = EvernoteClient(
@@ -85,8 +85,8 @@ async def callback(
                 sandbox=settings.evernote_sandbox_enabled,
             )
             access_token = client.get_access_token(
-                oauth_token=saved_data["oauth_token"],
-                oauth_token_secret=saved_data["oauth_token_secret"],
+                oauth_token=auth_request.oauth_token,
+                oauth_token_secret=auth_request.oauth_token_secret,
                 oauth_verifier=oauth_verifier,
             )
         except KeyError:
@@ -95,7 +95,7 @@ async def callback(
         evernote_user = client.get_user_store().getUser()
         print(access_token)
         await telegram.send_message(
-            saved_data["chat_id"],
+            auth_request.chat_id,
             f"Hello, {evernote_user.username}!\nYou have been authorized",
         )
 
@@ -114,6 +114,7 @@ COMMANDS = {
 }
 
 print(f"Installed commands: {COMMANDS.keys()}")
+print(f"EVERNOTE_SANDBOX_ENABLED: {settings.evernote_sandbox_enabled}")
 
 
 @app.post(telegram.get_webhook_url())
