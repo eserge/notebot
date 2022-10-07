@@ -4,7 +4,6 @@ from typing import Optional
 import attrs
 from pickledb import PickleDB
 
-from entities import Update
 from models import AuthRequest, User
 
 
@@ -60,12 +59,3 @@ class AuthRequests(AbstractRepo):
     def unset(self, id: str) -> None:
         key = self._get_key(id)
         self.db.rem(key)
-
-
-def get_user_from_update(update: Update, users: Users) -> Optional[User]:
-    assert update.message
-    assert update.message.from_user
-
-    user_id = str(update.message.from_user.id)
-    user = users.get(user_id)
-    return user
