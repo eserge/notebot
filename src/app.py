@@ -19,13 +19,17 @@ from telegram import Telegram
 
 settings = get_settings()
 
-sentry_sdk.init(
-    dsn=settings.sentry_dsn,
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for performance monitoring.
-    # We recommend adjusting this value in production,
-    traces_sample_rate=1.0,
-)
+if settings.sentry_dsn:
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production,
+        traces_sample_rate=1.0,
+    )
+else:
+    print("WARNING: starting without Sentry!")
+
 db = pickledb.load(
     os.path.join(settings.app_data_dir, settings.app_data_filename), auto_dump=True
 )
