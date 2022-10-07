@@ -2,6 +2,7 @@ from typing import Any, Dict, Optional
 
 from mako.template import Template
 
+from adapters import Adapters
 from entities import Message, Update
 from models import MessageChain, Note, User
 from repo import Users
@@ -79,3 +80,12 @@ def _gather_note_data(note: Note) -> Dict[str, Any]:
         data["links"] = note.links
 
     return data
+
+
+async def confirm_message_saved(update: Update, adapters: Adapters):
+    assert update.message is not None
+    assert update.message.chat is not None
+
+    CONFIRMATION_TEXT = "Saved!"
+    chat_id = update.message.chat.id
+    await adapters.telegram.send_message(chat_id, CONFIRMATION_TEXT)
