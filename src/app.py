@@ -39,10 +39,19 @@ app.include_router(router)
 init_adapters(app=app, telegram=telegram, users=users, auth_requests=auth_requests)
 
 
-COMMANDS = {
-    "/ping": ping,
-    "/auth": auth,
-}
+COMMANDS = {}  # type: ignore
+
+
+def get_commands():
+    global COMMANDS
+    if not COMMANDS:
+        COMMANDS = {
+            "/ping": ping,
+            "/auth": auth,
+        }
+
+    return COMMANDS
+
 
 print(f"Installed commands: {COMMANDS.keys()}")
 print(f"EVERNOTE_SANDBOX_ENABLED: {settings.evernote_sandbox_enabled}")
@@ -64,26 +73,39 @@ async def webhook(update: Update):
 def dispatch_command(
     update: Update,
 ) -> Optional[Callable[[Update, Any], Coroutine[Any, Any, Any]]]:
+    command = _get_command(update)
+    if not command:
+        return None
+    print(command)
+
+    return COMMANDS[command]
+
+
+def _get_command(update: Update) -> Optional[str]:
+    print(update)
     if not update.message:
         return None
 
-    command = update.message.text
-    assert command
+    # command is a text-only message
+    if not update.message.text:
+        return None
 
-    print(command)
-    if _is_command(command):
-        return COMMANDS[command]
+    command = update.message.text
+    if _is_supported_command(command):
+        return command
 
     return None
 
 
-def _is_command(command: Optional[str]) -> bool:
+def _is_supported_command(command: str) -> bool:
     # Command if it's a oneliner starting with "/"
     # And it is declared in COMMANDS
-    if not command:
-        return False
     if not command.startswith("/"):
+        return False
+    unslash = command[1:]
+    if not unslash.isalnum():
         return False
     if command.count("\n") > 0:
         return False
-    return command in COMMANDS
+
+    return command in get_commands()

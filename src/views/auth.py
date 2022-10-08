@@ -1,5 +1,3 @@
-from sqlite3 import adapters
-
 import attrs
 from evernote.api.client import EvernoteClient
 from fastapi import APIRouter
