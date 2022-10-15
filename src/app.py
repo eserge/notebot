@@ -39,21 +39,21 @@ app.include_router(router)
 init_adapters(app=app, telegram=telegram, users=users, auth_requests=auth_requests)
 
 
-COMMANDS = {}  # type: ignore
+_COMMANDS = {}  # type: ignore
 
 
-def get_commands():
-    global COMMANDS
-    if not COMMANDS:
-        COMMANDS = {
+def get_commands() -> dict:
+    global _COMMANDS
+    if not _COMMANDS:
+        _COMMANDS = {
             "/ping": ping,
             "/auth": auth,
         }
 
-    return COMMANDS
+    return _COMMANDS
 
 
-print(f"Installed commands: {COMMANDS.keys()}")
+print(f"Installed commands: {get_commands().keys()}")
 print(f"EVERNOTE_SANDBOX_ENABLED: {settings.evernote_sandbox_enabled}")
 
 
@@ -76,9 +76,9 @@ def dispatch_command(
     command = _get_command(update)
     if not command:
         return None
-    print(command)
 
-    return COMMANDS[command]
+    print(command)
+    return get_commands()[command]
 
 
 def _get_command(update: Update) -> Optional[str]:
