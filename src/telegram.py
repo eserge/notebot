@@ -8,6 +8,7 @@ import httpx
 class Telegram:
     token: str
     secret: str
+    http_client: httpx.AsyncClient = attrs.Factory(httpx.AsyncClient)
 
     API_URL_BASE = "https://api.telegram.org/bot"
 
@@ -22,23 +23,22 @@ class Telegram:
             "url": webhook_url,
             "secret_token": self.secret,
         }
-        async with httpx.AsyncClient() as client:
-            response = await client.post(self._get_api_set_webhook_url(), data=payload)
+        response = await self.http_client.post(
+            self._get_api_set_webhook_url(), data=payload
+        )
 
         return response.status_code == HTTPStatus.OK
 
     async def webhook_info(self):
-        async with httpx.AsyncClient() as client:
-            response = await client.post(self._get_api_set_webhook_url())
+        response = await self.http_client.post(self._get_api_set_webhook_url())
 
         return response
 
     async def send_message(self, chat_id, text) -> bool:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                self._get_api_send_message_url(),
-                data={"text": text, "chat_id": chat_id},
-            )
+        response = await self.http_client.post(
+            self._get_api_send_message_url(),
+            data={"text": text, "chat_id": chat_id},
+        )
 
         return response.status_code == HTTPStatus.OK
 
