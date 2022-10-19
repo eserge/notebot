@@ -13,8 +13,7 @@ class Telegram:
     API_URL_BASE = "https://api.telegram.org/bot"
 
     async def delete_webhook(self) -> bool:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(self._get_api_delete_webhook_url())
+        response = await self.http_client.post(self._get_api_delete_webhook_url())
 
         return response.status_code == HTTPStatus.OK
 
