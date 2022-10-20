@@ -140,7 +140,7 @@ class User:
     id: str
     auth_token: Optional[str]
 
-    def is_authenticated(self):
+    def is_authorized(self):
         return self.auth_token is not None
 
 

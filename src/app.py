@@ -1,4 +1,5 @@
 import os
+import traceback
 from typing import Any, Callable, Coroutine, Optional
 
 import pickledb
@@ -8,8 +9,9 @@ from fastapi import FastAPI
 from adapters import get_adapters, init_adapters
 from commands import auth, ping
 from config import get_settings
-from domain import confirm_message_saved, process_update
-from entities import Update
+from domain import save_message_to_note
+from entities import Message, Update
+from models import User
 from repo import AuthRequests, Users
 from telegram import Telegram
 from views import router
@@ -57,17 +59,33 @@ print(f"Installed commands: {get_commands().keys()}")
 print(f"EVERNOTE_SANDBOX_ENABLED: {settings.evernote_sandbox_enabled}")
 
 
+class NotAuthorized(Exception):
+    pass
+
+
+class IncompatibleUpdateFormat(Exception):
+    pass
+
+
 @app.post(telegram.get_webhook_url())
 async def webhook(update: Update):
-    adapters = get_adapters()
-    command_handler = dispatch_command(update)
-    if command_handler:
-        await command_handler(update, adapters)
-    else:
-        process_update(update, adapters.users)
-        await confirm_message_saved(update, adapters)
-
-    return {}
+    try:
+        adapters = get_adapters()
+        user = get_user_from_update(update, adapters.users)
+        command_handler = dispatch_command(update)
+        if command_handler:
+            await command_handler(update, adapters)
+        else:
+            await update_handler(update, user, adapters)
+    except IncompatibleUpdateFormat:
+        print("Application needs data missing in the Update object")
+    except Exception:
+        # Silence all exceptions
+        print("TODO: Send to Sentry")
+        print(traceback.format_exc())
+    finally:
+        # If we return anything except OK, webhook will be spammed with retries
+        return {}
 
 
 def dispatch_command(
@@ -79,6 +97,52 @@ def dispatch_command(
 
     print(command)
     return get_commands()[command]
+
+
+async def update_handler(update, user, adapters):
+    message = _get_message(update)
+    if not message:
+        raise IncompatibleUpdateFormat
+
+    if user.is_authorized:
+        await handle_update(update, user, adapters)
+    else:
+        adapters.telegram.send_message(user.id)
+
+
+async def handle_update(update: Update, user: User, adapters) -> None:
+    await save_message_to_note(update, user, adapters)
+
+
+def get_user_from_update(update: Update, users: Users) -> User:
+    user_id = str(get_user_id_from_update(update))
+    user = get_user_by_id(user_id, users)
+    if user:
+        return user
+
+    return User(user_id, auth_token=None)
+
+
+def get_user_id_from_update(update: Update) -> int:
+    if not update.message:
+        raise IncompatibleUpdateFormat
+    if not update.message.from_user:
+        raise IncompatibleUpdateFormat
+
+    assert update.message
+    assert update.message.from_user
+
+    user_id = update.message.from_user.id
+    return user_id
+
+
+def get_user_by_id(id: str, users: Users) -> Optional[User]:
+    user = users.get(id)
+    return user
+
+
+def _get_message(update: Update) -> Optional[Message]:
+    return update.message
 
 
 def _get_command(update: Update) -> Optional[str]:
