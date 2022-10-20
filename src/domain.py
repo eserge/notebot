@@ -3,29 +3,15 @@ from typing import Any, Dict
 from mako.template import Template
 
 from adapters import Adapters
-from entities import Message, Update
+from entities import Message
 from models import MessageChain, Note, User
 from transport import save_to_file, send_to_evernote
 
 
-def _(message) -> str:
-    return message
-
-
-_MESSAGES = {"NotAuthorized": _("Please authorize first by entering `/auth` command")}
-
-
-async def save_message_to_note(update: Update, user: User, adapters):
-    message = receive_message(update)
+async def save_message_to_note(message: Message, user: User, adapters):
     note = create_note(message)
     save(note, user)
-    await confirm_message_saved(update, adapters)
-
-
-def receive_message(update: Update) -> Message:
-    message = update.message
-    assert message
-    return message
+    await confirm_message_saved(message, adapters)
 
 
 def create_note(message: Message) -> Note:
@@ -63,10 +49,9 @@ def _gather_note_data(note: Note) -> Dict[str, Any]:
     return data
 
 
-async def confirm_message_saved(update: Update, adapters: Adapters):
-    assert update.message is not None
-    assert update.message.chat is not None
+async def confirm_message_saved(message: Message, adapters: Adapters):
+    assert message.chat is not None
 
     CONFIRMATION_TEXT = "Saved!"
-    chat_id = update.message.chat.id
+    chat_id = message.chat.id
     await adapters.telegram.send_message(chat_id, CONFIRMATION_TEXT)

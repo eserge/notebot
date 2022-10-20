@@ -3,28 +3,25 @@ import secrets
 from evernote.api.client import EvernoteClient
 
 from config import Settings, get_settings
-from entities import Update
-from models import AuthRequest
+from entities import Message
+from models import AuthRequest, User
 
 TOKEN_LENGTH = 16
 
 
-async def ping(update: Update, adapters):
-    assert update.message is not None
-    assert update.message.chat is not None
+async def ping(message: Message, user: User, adapters):
+    assert message.chat is not None
 
     PING_RESPONSE = "pong"
-    chat = update.message.chat
+    chat = message.chat
     return await adapters.telegram.send_message(chat.id, PING_RESPONSE)
 
 
-async def auth(update: Update, adapters):
-    assert update.message is not None
-    assert update.message.chat is not None
-    assert update.message.from_user is not None
+async def auth(message: Message, user: User, adapters):
+    assert message.chat is not None
+    assert message.from_user is not None
 
-    chat = update.message.chat
-    user = update.message.from_user
+    chat = message.chat
     settings = get_settings()
 
     callback_id = generate_token()

@@ -6,7 +6,7 @@ import pickledb
 import sentry_sdk
 from fastapi import FastAPI
 
-from adapters import get_adapters, init_adapters
+from adapters import Adapters, get_adapters, init_adapters
 from commands import auth, ping
 from config import get_settings
 from domain import save_message_to_note
@@ -71,12 +71,17 @@ class IncompatibleUpdateFormat(Exception):
 async def webhook(update: Update):
     try:
         adapters = get_adapters()
-        user = get_user_from_update(update, adapters.users)
-        command_handler = dispatch_command(update)
+        message = _get_message(update)
+        if not message:
+            raise IncompatibleUpdateFormat
+
+        user = get_user_from_message(message, adapters.users)
+
+        command_handler = dispatch_command(message)
         if command_handler:
-            await command_handler(update, adapters)
+            await command_handler(message, user, adapters)
         else:
-            await update_handler(update, user, adapters)
+            await message_handler(message, user, adapters)
     except IncompatibleUpdateFormat:
         print("Application needs data missing in the Update object")
     except Exception:
@@ -89,9 +94,9 @@ async def webhook(update: Update):
 
 
 def dispatch_command(
-    update: Update,
-) -> Optional[Callable[[Update, Any], Coroutine[Any, Any, Any]]]:
-    command = _get_command(update)
+    message: Message,
+) -> Optional[Callable[[Message, Any, Any], Coroutine[Any, Any, Any]]]:
+    command = _get_command(message)
     if not command:
         return None
 
@@ -99,23 +104,19 @@ def dispatch_command(
     return get_commands()[command]
 
 
-async def update_handler(update, user, adapters):
-    message = _get_message(update)
-    if not message:
-        raise IncompatibleUpdateFormat
-
+async def message_handler(message: Message, user: User, adapters: Adapters):
     if user.is_authorized:
-        await handle_update(update, user, adapters)
+        await handle_message(message, user, adapters)
     else:
         adapters.telegram.send_message(user.id)
 
 
-async def handle_update(update: Update, user: User, adapters) -> None:
-    await save_message_to_note(update, user, adapters)
+async def handle_message(message: Message, user: User, adapters) -> None:
+    await save_message_to_note(message, user, adapters)
 
 
-def get_user_from_update(update: Update, users: Users) -> User:
-    user_id = str(get_user_id_from_update(update))
+def get_user_from_message(message: Message, users: Users) -> User:
+    user_id = str(get_user_id_from_message(message))
     user = get_user_by_id(user_id, users)
     if user:
         return user
@@ -123,16 +124,12 @@ def get_user_from_update(update: Update, users: Users) -> User:
     return User(user_id, auth_token=None)
 
 
-def get_user_id_from_update(update: Update) -> int:
-    if not update.message:
+def get_user_id_from_message(message: Message) -> int:
+    if not message.from_user:
         raise IncompatibleUpdateFormat
-    if not update.message.from_user:
-        raise IncompatibleUpdateFormat
+    assert message.from_user
 
-    assert update.message
-    assert update.message.from_user
-
-    user_id = update.message.from_user.id
+    user_id = message.from_user.id
     return user_id
 
 
@@ -145,16 +142,13 @@ def _get_message(update: Update) -> Optional[Message]:
     return update.message
 
 
-def _get_command(update: Update) -> Optional[str]:
-    print(update)
-    if not update.message:
-        return None
-
+def _get_command(message: Message) -> Optional[str]:
+    print(message)
     # command is a text-only message
-    if not update.message.text:
+    if not message.text:
         return None
 
-    command = update.message.text
+    command = message.text
     if _is_supported_command(command):
         return command
 
