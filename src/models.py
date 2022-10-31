@@ -3,11 +3,18 @@ from collections import deque
 from typing import Any, Deque, Dict, List, Optional
 
 import attrs
+from mako.template import Template
 
 from entities import Message, MessageEntity
 
 Messages = List[Message]
 Link = Dict[str, Optional[str]]
+
+
+def create_note(message: Message) -> "Note":
+    mc = MessageChain()
+    mc.attempt_to_append(message)
+    return Note(mc)
 
 
 @attrs.define
@@ -40,10 +47,17 @@ class MessageAdapter:
 
     @staticmethod
     def parse_text(text: str) -> List[str | Any]:
+        text = MessageAdapter.sanitize(text)
+
         # split text into paragraphs, denoted
         # by a sequence of 2 or more \n chars
         paragraphs = re.split("\n{2,}", text)
         return paragraphs
+
+    @staticmethod
+    def sanitize(text: str) -> str:
+        # TODO: remove unwanted symbols and characters
+        return text
 
     @staticmethod
     def get_link(messages: Messages) -> Optional[str]:
@@ -113,6 +127,24 @@ class Note:
     def __init__(self, chain: MessageChain) -> None:
         self.messages = list(chain.chain)
         self.adapter = MessageAdapter
+
+    def render_html(self) -> str:
+        template = Template(filename="tpl/note.mako")
+        data = self._gather_data()
+        output = template.render(**data)
+        return output
+
+    def _gather_data(self) -> Dict[str, Any]:
+        data: Dict[str, Any] = {
+            "text": self.text,
+            "header": self.header,
+        }
+        if self.message_link:
+            data["message_link"] = self.message_link
+        if self.links:
+            data["links"] = self.links
+
+        return data
 
     @property
     def text(self) -> List[str]:
