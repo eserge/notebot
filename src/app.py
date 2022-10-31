@@ -84,9 +84,10 @@ async def webhook(update: Update):
             await message_handler(message, user, adapters)
     except IncompatibleUpdateFormat:
         print("Application needs data missing in the Update object")
+        sentry_sdk.capture_exception()
     except Exception:
-        # Silence all exceptions
-        print("TODO: Send to Sentry")
+        # Silence all exceptions to avoid retries on the webhook
+        sentry_sdk.capture_exception()
         print(traceback.format_exc())
     finally:
         # If we return anything except OK, webhook will be spammed with retries
