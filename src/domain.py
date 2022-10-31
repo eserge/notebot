@@ -1,11 +1,11 @@
 from adapters import Adapters
 from entities import Message
-from models import Note, User, create_note
+from models import Note, User
 from transport import save_to_file, send_to_evernote
 
 
 async def save_message_to_note(message: Message, user: User, adapters):
-    note = create_note(message)
+    note = Note.from_message(message)
     save(note, user)
     await confirm_message_saved(message, adapters)
 

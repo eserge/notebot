@@ -5,29 +5,30 @@ from typing import Any, Deque, Dict, List, Optional
 import attrs
 from mako.template import Template
 
-from entities import Message, MessageEntity
+import entities as api_entities
 
-Messages = List[Message]
+Messages = List[api_entities.Message]
 Link = Dict[str, Optional[str]]
 
 
-def create_note(message: Message) -> "Note":
-    mc = MessageChain()
-    mc.attempt_to_append(message)
-    return Note(mc)
+class Message:
+    title: str
+    text: str
+    links: List
+    resources: List
 
 
 @attrs.define
 class MessageChain:
-    chain: Deque[Message] = attrs.field(factory=deque)
+    chain: Deque[api_entities.Message] = attrs.field(factory=deque)
 
-    def attempt_to_append(self, message: Message) -> bool:
+    def attempt_to_append(self, message: api_entities.Message) -> bool:
         if self._check_message_affiliation(message):
             self.chain.append(message)
             return True
         return False
 
-    def _check_message_affiliation(self, message: Message) -> bool:
+    def _check_message_affiliation(self, message: api_entities.Message) -> bool:
         return True
 
 
@@ -92,16 +93,21 @@ class MessageAdapter:
         if message.text or message.caption:
             text = message.text or message.caption
 
-        entity_objects = [MessageEntity(**ent) for ent in iter(entities)]
+        entity_objects = [api_entities.MessageEntity(**ent) for ent in iter(entities)]
 
         return [
-            {"url": entity.url, "text": MessageAdapter.get_link_text(entity, text)}
+            {
+                "url": entity.url,
+                "text": MessageAdapter.get_link_text(entity, text),
+            }
             for entity in entity_objects
             if entity.type == MessageAdapter.LINK_ENTITY_TYPE and entity.url
         ]
 
     @staticmethod
-    def get_link_text(entity: MessageEntity, message: Optional[str]) -> Optional[str]:
+    def get_link_text(
+        entity: api_entities.MessageEntity, message: Optional[str]
+    ) -> Optional[str]:
         if not message:
             return entity.url
         return message[entity.offset : entity.offset + entity.length]
@@ -127,6 +133,12 @@ class Note:
     def __init__(self, chain: MessageChain) -> None:
         self.messages = list(chain.chain)
         self.adapter = MessageAdapter
+
+    @staticmethod
+    def from_message(message: api_entities.Message) -> "Note":
+        mc = MessageChain()
+        mc.attempt_to_append(message)
+        return Note(mc)
 
     def render_html(self) -> str:
         template = Template(filename="tpl/note.mako")
