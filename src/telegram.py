@@ -33,7 +33,7 @@ class Telegram:
 
         return response
 
-    async def send_message(self, chat_id, text) -> bool:
+    async def send_message(self, chat_id: str | int, text: str) -> bool:
         response = await self.http_client.post(
             self._get_api_send_message_url(),
             data={"text": text, "chat_id": chat_id},

@@ -108,7 +108,7 @@ async def message_handler(message: Message, user: User, adapters: Adapters):
     if user.is_authorized:
         await handle_message(message, user, adapters)
     else:
-        adapters.telegram.send_message(user.id)
+        adapters.telegram.send_message(user.id, "Unauthorized, type: /auth")
 
 
 async def handle_message(message: Message, user: User, adapters) -> None:
