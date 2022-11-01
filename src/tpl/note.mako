@@ -5,13 +5,13 @@
 <p>This content couldn't be linked back.</p>
 % endif
 % for paragraph in text:
-<p>${paragraph| mako_filters.xml_escape, mako_filters.linebreaks, mako_filters.links}</p>
+<p>${paragraph | mako_filters.xml_escape, mako_filters.linebreaks, mako_filters.links}</p>
 % endfor
 % if links:
 <h3>Links:</h3>
 <ul>
     % for link in links:
-    <li><a href="${link['url'] | mako_filters.xml_escape }">${link['text']}</a></li>
+    <li><a href="${link['url'] | mako_filters.xml_escape }">${link['text'] | mako_filters.xml_escape }</a></li>
     % endfor
 </ul>
 % endif
