@@ -10,7 +10,7 @@ from adapters import Adapters, get_adapters, init_adapters
 from commands import auth, ping
 from config import get_settings
 from domain import save_message_to_note
-from entities import Message, Update
+from ingest_models import Message, Update
 from models import User
 from repo import AuthRequests, Users
 from telegram import Telegram

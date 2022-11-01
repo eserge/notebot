@@ -1,5 +1,5 @@
 from adapters import Adapters
-from entities import Message
+from ingest_models import Message
 from models import Note, User
 from transport import save_to_file, send_to_evernote
 

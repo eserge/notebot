@@ -3,7 +3,7 @@ import secrets
 from evernote.api.client import EvernoteClient
 
 from config import Settings, get_settings
-from entities import Message
+from ingest_models import Message
 from models import AuthRequest, User
 
 TOKEN_LENGTH = 16

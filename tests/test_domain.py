@@ -1,7 +1,7 @@
 import pytest
 
 from domain import process_update, NotAuthorized
-from entities import Update
+from ingest_models import Update
 from models import User
 
 

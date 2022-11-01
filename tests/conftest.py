@@ -3,7 +3,7 @@ from typing import Any
 
 import pytest
 
-from entities import Update, Message, Chat, User
+from ingest_models import Update, Message, Chat, User
 from repo import AbstractRepo
 
 
