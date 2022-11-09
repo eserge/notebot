@@ -1,7 +1,8 @@
 import pytest
+from asyncmock import AsyncMock
 
-from domain import process_update, NotAuthorized
-from ingest_models import Update
+from domain import save_message_to_note
+
 from models import User
 
 
@@ -16,8 +17,11 @@ def mock_save_to_file(mocker):
 
 
 @pytest.fixture
-def mock_render_html(mocker):
-    return mocker.patch("domain.render_html")
+def mock_template(mocker):
+    MockTemplate = mocker.MagicMock(
+        render_html=mocker.Mock(return_value="rendered html")
+    )
+    return mocker.patch("models.Template", new=MockTemplate)
 
 
 @pytest.fixture
@@ -29,50 +33,35 @@ def update(update_constructor, user_constructor, message_constructor):
 
 
 @pytest.fixture
-def update_w_empty_message(update_constructor):
-    update = update_constructor(message=None)
-    return update
+def message(message_constructor, user_constructor):
+    user = user_constructor()
+    message = message_constructor(from_user=user, text="test message")
+    return message
 
 
-class TestProcessUpdate:
-    def test_ok(
+@pytest.fixture
+def user():
+    user = User(id="1234567890", auth_token="test_auth_token")
+    return user
+
+
+@pytest.fixture
+def adapters(mocker):
+    return mocker.MagicMock(telegram=mocker.Mock(send_message=AsyncMock()))
+
+
+class TestSaveMessageToNote:
+    @pytest.mark.asyncio
+    async def test_ok(
         self,
-        mock_render_html,
         mock_save_to_file,
         mock_send_to_evernote,
-        users_repo,
-        update,
+        mock_template,
+        message,
+        user,
+        adapters,
     ):
-        TEST_TOKEN = "test_token"
-        user = update.message.from_user
-        users_repo.set(User(id=user.id, auth_token=TEST_TOKEN))
+        await save_message_to_note(message, user, adapters=adapters)
 
-        process_update(update, users_repo)
         assert mock_save_to_file.called
         assert mock_send_to_evernote.called
-
-    def test_missing_message(
-        self,
-        users_repo,
-        update_w_empty_message,
-        mock_save_to_file,
-        mock_send_to_evernote,
-    ):
-        with pytest.raises(NotAuthorized):
-            process_update(update_w_empty_message, users_repo)
-
-        assert not mock_save_to_file.called
-        assert not mock_send_to_evernote.called
-
-    def test_missing_user(
-        self,
-        users_repo,
-        update,
-        mock_save_to_file,
-        mock_send_to_evernote,
-    ):
-        with pytest.raises(NotAuthorized):
-            process_update(update, users_repo)
-
-        assert not mock_save_to_file.called
-        assert not mock_send_to_evernote.called

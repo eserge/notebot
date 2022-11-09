@@ -4,7 +4,7 @@ from models import Note, User
 from transport import save_to_file, send_to_evernote
 
 
-async def save_message_to_note(message: Message, user: User, adapters):
+async def save_message_to_note(message: Message, user: User, adapters) -> None:
     note = Note.from_message(message)
     save(note, user)
     await confirm_message_saved(message, adapters)
@@ -18,7 +18,7 @@ def save(note: Note, user: User) -> None:
     send_to_evernote(note.header, note_content, user.auth_token)
 
 
-async def confirm_message_saved(message: Message, adapters: Adapters):
+async def confirm_message_saved(message: Message, adapters: Adapters) -> None:
     assert message.chat is not None
 
     CONFIRMATION_TEXT = "Saved!"
