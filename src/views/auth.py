@@ -4,8 +4,6 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from mako.template import Template
 
-from adapters import get_adapters
-from config import get_settings
 from models import User
 
 auth_router = APIRouter()
@@ -19,7 +17,8 @@ async def callback(
     oauth_verifier: str | None = None,
     sandbox_lnb: bool | None = None,
 ):
-    _state = request.app.state
+    state = request.app.state
+    settings = state.settings
     if not oauth_verifier:
         # If oauth_verifier is missing, user chose not to
         # authorize our bot, or something went wrong
@@ -31,10 +30,8 @@ async def callback(
         "oauth_verifier": oauth_verifier,
         "sandbox_lnb": sandbox_lnb,
     }
-    adapters = get_adapters()
-    settings = get_settings()
 
-    if auth_request := adapters.auth_requests.get(callback_id):
+    if auth_request := state.auth_requests.get(callback_id):
         user_id = auth_request.user_id
         print(attrs.asdict(auth_request), callback_data)
 
@@ -53,14 +50,14 @@ async def callback(
             return Template(filename="tpl/auth_fail.mako").render()
 
         evernote_user = client.get_user_store().getUser()
-        await adapters.telegram.send_message(
+        await state.telegram.send_message(
             auth_request.chat_id,
             f"Hello, {evernote_user.username}!\nYou have been authorized",
         )
 
         user = User(id=user_id, auth_token=access_token)
-        adapters.users.set(user)
-        adapters.auth_requests.unset(callback_id)
+        state.users.set(user)
+        state.auth_requests.unset(callback_id)
 
         return Template(filename="tpl/auth_success.mako").render()
 

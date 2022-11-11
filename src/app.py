@@ -5,8 +5,8 @@ from typing import Any, Callable, Coroutine, Optional
 import pickledb
 import sentry_sdk
 from fastapi import FastAPI, Request
+from starlette.datastructures import State
 
-from adapters import Adapters, get_adapters, init_adapters
 from commands import auth, ping
 from config import get_settings
 from domain import save_message_to_note
@@ -29,16 +29,27 @@ if settings.sentry_dsn:
 else:
     print("WARNING: starting without Sentry!")
 
-db = pickledb.load(
-    os.path.join(settings.app_data_dir, settings.app_data_filename), auto_dump=True
-)
-app = FastAPI()
 
-telegram = Telegram(settings.telegram_token, settings.telegram_secret)
-users = Users(db=db)
-auth_requests = AuthRequests(db=db)
+def state_constructor(app: FastAPI) -> Callable:
+    state = app.state
+
+    def initialize_state():
+        db = pickledb.load(
+            os.path.join(settings.app_data_dir, settings.app_data_filename),
+            auto_dump=True,
+        )
+
+        state.settings = settings
+        state.telegram = Telegram(settings.telegram_token, settings.telegram_secret)
+        state.users = Users(db=db)
+        state.auth_requests = AuthRequests(db=db)
+
+    return initialize_state
+
+
+app = FastAPI()
 app.include_router(router)
-init_adapters(app=app, telegram=telegram, users=users, auth_requests=auth_requests)
+app.add_event_handler("startup", state_constructor(app))
 
 
 _COMMANDS = {}  # type: ignore
@@ -67,22 +78,21 @@ class IncompatibleUpdateFormat(Exception):
     pass
 
 
-@app.post(telegram.get_webhook_url())
+@app.post(settings.get_webhook_url())
 async def webhook(update: Update, request: Request):
     try:
-        _state = request.app.state
-        adapters = get_adapters()
+        state = request.app.state
         message = _get_message(update)
         if not message:
             raise IncompatibleUpdateFormat
 
-        user = get_user_from_message(message, adapters.users)
+        user = get_user_from_message(message, state.users)
 
         command_handler = dispatch_command(message)
         if command_handler:
-            await command_handler(message, user, adapters)
+            await command_handler(message, user, state)
         else:
-            await message_handler(message, user, adapters)
+            await message_handler(message, user, state)
     except IncompatibleUpdateFormat:
         print("Application needs data missing in the Update object")
         sentry_sdk.capture_exception()
@@ -106,15 +116,16 @@ def dispatch_command(
     return get_commands()[command]
 
 
-async def message_handler(message: Message, user: User, adapters: Adapters):
+async def message_handler(message: Message, user: User, state: State):
     if user.is_authorized:
-        await handle_message(message, user, adapters)
+        await handle_message(message, user, state)
     else:
-        adapters.telegram.send_message(user.id, "Unauthorized, type: /auth")
+        state.telegram.send_message(user.id, "Unauthorized, type: /auth")
 
 
-async def handle_message(message: Message, user: User, adapters) -> None:
-    await save_message_to_note(message, user, adapters)
+async def handle_message(message: Message, user: User, state: State) -> None:
+    telegram = state.telegram
+    await save_message_to_note(message, user, telegram)
 
 
 def get_user_from_message(message: Message, users: Users) -> User:

@@ -14,6 +14,12 @@ class Settings(BaseSettings):
     telegram_secret: str
     telegram_token: str
 
+    def get_webhook_url(self) -> str:
+        return f"/webhook/{self._get_token_websafe()}"
+
+    def _get_token_websafe(self) -> str:
+        return self.telegram_token.replace(":", "/")
+
 
 def get_settings() -> Settings:
     return Settings()

@@ -55,9 +55,3 @@ class Telegram:
 
     def _get_api_send_message_url(self) -> str:
         return f"{self._get_api_url_base()}sendMessage"
-
-    def get_webhook_url(self) -> str:
-        return f"/webhook/{self._get_token_websafe()}"
-
-    def _get_token_websafe(self) -> str:
-        return self.token.replace(":", "/")

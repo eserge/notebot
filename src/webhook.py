@@ -2,9 +2,13 @@ import asyncio
 
 import typer
 
-from app import settings, telegram
+from config import get_settings
+from telegram import Telegram
 
 app = typer.Typer()
+
+settings = get_settings()
+telegram = Telegram(settings.telegram_token, settings.telegram_secret)
 
 
 @app.command()
@@ -34,7 +38,7 @@ def reinstall():
 def _get_public_webhook_url() -> str:
     SCHEMA = "https"
     HOST = settings.app_host
-    URL = telegram.get_webhook_url()
+    URL = settings.get_webhook_url()
     return f"{SCHEMA}://{HOST}{URL}"
 
 

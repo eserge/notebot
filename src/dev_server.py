@@ -4,7 +4,8 @@ import typer
 import uvicorn
 from pyngrok import ngrok
 
-from app import settings, telegram
+from app import settings
+from telegram import Telegram
 
 app = typer.Typer()
 
@@ -17,8 +18,10 @@ def get_public_url(private_port) -> str:
 
 def install_webhook(port: int) -> str:
     public_url = get_public_url(port)
-    webhook_url = telegram.get_webhook_url()
+    webhook_url = settings.get_webhook_url()
     public_webhook_url = f"{public_url}{webhook_url}"
+
+    telegram = Telegram(settings.telegram_token, settings.telegram_secret)
     installed = asyncio.run(telegram.install_webhook(public_webhook_url))
     return public_webhook_url if installed else ""
 

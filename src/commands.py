@@ -1,6 +1,7 @@
 import secrets
 
 from evernote.api.client import EvernoteClient
+from starlette.datastructures import State
 
 from config import Settings, get_settings
 from ingest_models import Message
@@ -9,15 +10,15 @@ from models import AuthRequest, User
 TOKEN_LENGTH = 16
 
 
-async def ping(message: Message, user: User, adapters):
+async def ping(message: Message, user: User, state: State):
     assert message.chat is not None
 
     PING_RESPONSE = "pong"
     chat = message.chat
-    return await adapters.telegram.send_message(chat.id, PING_RESPONSE)
+    return await state.telegram.send_message(chat.id, PING_RESPONSE)
 
 
-async def auth(message: Message, user: User, adapters):
+async def auth(message: Message, user: User, state: State):
     assert message.chat is not None
     assert message.from_user is not None
 
@@ -43,13 +44,13 @@ async def auth(message: Message, user: User, adapters):
         "oauth_token_secret": request_token["oauth_token_secret"],
     }
     auth_request = AuthRequest(**data)
-    adapters.auth_requests.set(auth_request)
+    state.auth_requests.set(auth_request)
 
     AUTH_RESPONSE = (
         f"Starting authentication process.\n"
         f"Please open this link to confirm Evernote access: {auth_url}"
     )
-    return await adapters.telegram.send_message(chat.id, AUTH_RESPONSE)
+    return await state.telegram.send_message(chat.id, AUTH_RESPONSE)
 
 
 def generate_token():
