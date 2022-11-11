@@ -1,6 +1,6 @@
 import attrs
 from evernote.api.client import EvernoteClient
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from mako.template import Template
 
@@ -14,10 +14,12 @@ auth_router = APIRouter()
 @auth_router.get("/callback/{callback_id}", response_class=HTMLResponse)
 async def callback(
     callback_id: str,
+    request: Request,
     oauth_token: str | None = None,
     oauth_verifier: str | None = None,
     sandbox_lnb: bool | None = None,
 ):
+    _state = request.app.state
     if not oauth_verifier:
         # If oauth_verifier is missing, user chose not to
         # authorize our bot, or something went wrong

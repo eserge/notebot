@@ -4,7 +4,7 @@ from typing import Any, Callable, Coroutine, Optional
 
 import pickledb
 import sentry_sdk
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
 from adapters import Adapters, get_adapters, init_adapters
 from commands import auth, ping
@@ -68,8 +68,9 @@ class IncompatibleUpdateFormat(Exception):
 
 
 @app.post(telegram.get_webhook_url())
-async def webhook(update: Update):
+async def webhook(update: Update, request: Request):
     try:
+        _state = request.app.state
         adapters = get_adapters()
         message = _get_message(update)
         if not message:
