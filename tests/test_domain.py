@@ -46,8 +46,8 @@ def user():
 
 
 @pytest.fixture
-def adapters(mocker):
-    return mocker.MagicMock(telegram=mocker.Mock(send_message=AsyncMock()))
+def telegram(mocker):
+    return mocker.Mock(send_message=AsyncMock())
 
 
 class TestSaveMessageToNote:
@@ -59,9 +59,9 @@ class TestSaveMessageToNote:
         mock_template,
         message,
         user,
-        adapters,
+        telegram,
     ):
-        await save_message_to_note(message, user, adapters=adapters)
+        await save_message_to_note(message, user, telegram)
 
         assert mock_save_to_file.called
         assert mock_send_to_evernote.called
