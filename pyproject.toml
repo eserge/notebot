@@ -9,7 +9,6 @@ python = "^3.10"
 fastapi = "^0.82.0"
 uvicorn = {extras = ["standard"], version = "^0.18.3"}
 httpx = "^0.23.0"
-pyngrok = "^5.1.0"
 attrs = "^22.1.0"
 Mako = "^1.2.2"
 evernote3 = "^1.25.14"
@@ -31,6 +30,7 @@ isort = "^5.10.1"
 pytest-mock = "^3.10.0"
 pytest-asyncio = "^0.20.1"
 asyncmock = "^0.4.2"
+pyngrok = "^5.1.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
