@@ -8,7 +8,7 @@ from models import AuthRequest, User
 
 
 class AbstractRepo(abc.ABC):
-    _namespace = "user:"
+    _namespace: str
 
     def __init__(self, *, db: PickleDB) -> None:
         self.db = db
