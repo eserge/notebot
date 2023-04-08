@@ -59,3 +59,8 @@ class AuthRequests(AbstractRepo):
     def unset(self, id: str) -> None:
         key = self._get_key(id)
         self.db.rem(key)
+
+
+def get_user_by_id(id: str, users: Users) -> Optional[User]:
+    user = users.get(id)
+    return user

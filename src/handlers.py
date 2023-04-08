@@ -7,7 +7,7 @@ from domain import save_message_to_note
 from exceptions import IncompatibleUpdateFormat
 from ingest_models import Message, Update
 from models import User
-from repo import Users
+from repo import Users, get_user_by_id
 
 _COMMANDS = {}  # type: ignore
 
@@ -80,11 +80,6 @@ def get_user_id_from_message(message: Message) -> int:
 
     user_id = message.from_user.id
     return user_id
-
-
-def get_user_by_id(id: str, users: Users) -> Optional[User]:
-    user = users.get(id)
-    return user
 
 
 def _get_command(message: Message) -> Optional[str]:
