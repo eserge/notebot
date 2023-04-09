@@ -7,7 +7,7 @@ import uvicorn
 from pyngrok import ngrok
 
 from app import settings
-from telegram import Telegram
+from tclient import Telegram
 
 app = typer.Typer()
 

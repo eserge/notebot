@@ -3,7 +3,7 @@ import asyncio
 import typer
 
 from config import get_settings
-from telegram import Telegram
+from tclient import Telegram
 
 app = typer.Typer()
 

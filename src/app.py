@@ -5,13 +5,13 @@ from typing import Callable
 import pickledb
 import sentry_sdk
 from fastapi import FastAPI, Request
+from telegram import Update
 
 from config import get_settings
 from exceptions import IncompatibleUpdateFormat
 from handlers import webhook_handler
-from ingest_models import Update
 from repo import AuthRequests, Users
-from telegram import Telegram
+from tclient import Telegram
 from views import router
 
 settings = get_settings()
@@ -54,8 +54,11 @@ print(f"EVERNOTE_SANDBOX_ENABLED: {settings.evernote_sandbox_enabled}")
 
 
 @app.post(settings.get_webhook_url())
-async def webhook(update: Update, request: Request):
+async def webhook(request: Request):
     try:
+        breakpoint()
+        data = await request.json()
+        update = Update(**data)
         await webhook_handler(update, request.app.state.users, request.app.state)
     except IncompatibleUpdateFormat:
         print("Application needs data missing in the Update object")

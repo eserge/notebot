@@ -2,7 +2,7 @@ import attrs
 from fastapi import FastAPI
 
 from repo import AuthRequests, Users
-from telegram import Telegram
+from tclient import Telegram
 
 
 class ImproperlyConfigured(Exception):

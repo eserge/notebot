@@ -2,9 +2,9 @@ import secrets
 
 from evernote.api.client import EvernoteClient
 from starlette.datastructures import State
+from telegram import Message
 
 from config import Settings, get_settings
-from ingest_models import Message
 from models import AuthRequest, User
 
 TOKEN_LENGTH = 16

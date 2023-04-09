@@ -1,11 +1,13 @@
 from typing import Any, Callable, Coroutine, Optional
 
 from starlette.datastructures import State
+from telegram import Message, Update
 
 from commands import auth, ping
 from domain import save_message_to_note
 from exceptions import IncompatibleUpdateFormat
-from ingest_models import Message, Update
+
+# from ingest_models import Message, Update
 from models import User
 from repo import Users, get_user_by_id
 

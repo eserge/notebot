@@ -1,6 +1,7 @@
-from ingest_models import Message
+from telegram import Message
+
 from models import Note, User
-from telegram import Telegram
+from tclient import Telegram
 from transport import save_to_file, send_to_evernote
 
 
