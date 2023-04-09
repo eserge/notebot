@@ -2,18 +2,19 @@ import secrets
 
 from evernote.api.client import EvernoteClient
 from starlette.datastructures import State
-from telegram import Message
+from telegram import Message, Update
+from telegram.ext import ContextTypes
 
 from config import Settings, get_settings
 from models import AuthRequest, User
 
 TOKEN_LENGTH = 16
+PING_RESPONSE = "pong"
 
 
 async def ping(message: Message, user: User, state: State):
     assert message.chat is not None
 
-    PING_RESPONSE = "pong"
     chat = message.chat
     return await state.telegram.send_message(chat.id, PING_RESPONSE)
 
@@ -64,3 +65,43 @@ def get_callback_url(callback_id: str, settings: Settings):
     port = "" if production else f":{settings.app_port}"
 
     return f"{schema}://{host}{port}/callback/{callback_id}"
+
+
+class TelegramCommands:
+    @staticmethod
+    async def auth(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        breakpoint()
+        settings = get_settings()
+        callback_id = generate_token()
+        callback_url = get_callback_url(callback_id, settings)
+
+        client = EvernoteClient(
+            consumer_key=settings.evernote_consumer_key,
+            consumer_secret=settings.evernote_consumer_secret,
+            sandbox=settings.evernote_sandbox_enabled,
+        )
+        request_token = client.get_request_token(callback_url)
+        auth_url = client.get_authorize_url(request_token)
+
+        auth_response = (
+            f"Starting authentication process.\n"
+            f"Please open this link to confirm Evernote access: {auth_url}"
+        )
+
+        context.user_data["auth_request"] = AuthRequest(
+            id=callback_id,
+            chat_id=update.effective_chat.id,
+            user_id=update.effective_user.id,
+            oauth_token=request_token["oauth_token"],
+            oauth_token_secret=request_token["oauth_token_secret"],
+        )
+
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id, text=auth_response
+        )
+
+    @staticmethod
+    async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id, text=PING_RESPONSE
+        )
