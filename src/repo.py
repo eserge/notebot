@@ -3,11 +3,22 @@ from typing import Optional
 
 import attrs
 from pickledb import PickleDB
+from telegram.ext import BasePersistence
 
 from models import AuthRequest, User
 
 
 class AbstractRepo(abc.ABC):
+    @abc.abstractmethod
+    def get(self, key: str):
+        ...
+
+    @abc.abstractmethod
+    def set(self, *args, **kwargs) -> None:
+        ...
+
+
+class PickleDBRepo(AbstractRepo):
     _namespace: str
 
     def __init__(self, *, db: PickleDB) -> None:
@@ -25,7 +36,7 @@ class AbstractRepo(abc.ABC):
         ...
 
 
-class Users(AbstractRepo):
+class Users(PickleDBRepo):
     _namespace = "user:"
 
     def get(self, id: str) -> Optional[User]:
@@ -44,7 +55,7 @@ class Users(AbstractRepo):
         return self.db.exists(key)
 
 
-class AuthRequests(AbstractRepo):
+class AuthRequests(PickleDBRepo):
     _namespace = "auth:"
 
     def get(self, id: str) -> Optional[AuthRequest]:
@@ -64,3 +75,17 @@ class AuthRequests(AbstractRepo):
 def get_user_by_id(id: str, users: Users) -> Optional[User]:
     user = users.get(id)
     return user
+
+
+class PTBUsers(AbstractRepo):
+    def __init__(self, *, db: BasePersistence) -> None:
+        self._db = db
+
+    def get(self, id: str) -> Optional[User]:
+        pass
+
+    def set(self, user: User) -> None:
+        pass
+
+    def exists(self, id: str) -> bool:
+        pass
