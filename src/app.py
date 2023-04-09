@@ -53,20 +53,20 @@ app.add_event_handler("startup", state_constructor(app))
 print(f"EVERNOTE_SANDBOX_ENABLED: {settings.evernote_sandbox_enabled}")
 
 
-@app.post(settings.get_webhook_url())
-async def webhook(request: Request):
-    try:
-        breakpoint()
-        data = await request.json()
-        update = Update(**data)
-        await webhook_handler(update, request.app.state.users, request.app.state)
-    except IncompatibleUpdateFormat:
-        print("Application needs data missing in the Update object")
-        sentry_sdk.capture_exception()
-    except Exception:
-        # Silence all exceptions to avoid retries on the webhook
-        sentry_sdk.capture_exception()
-        print(traceback.format_exc())
-    finally:
-        # If we return anything except OK, webhook will be spammed with retries
-        return {}
+# @app.post(settings.get_webhook_url())
+# async def webhook(request: Request):
+#     try:
+#         breakpoint()
+#         data = await request.json()
+#         update = Update(**data)
+#         await webhook_handler(update, request.app.state.users, request.app.state)
+#     except IncompatibleUpdateFormat:
+#         print("Application needs data missing in the Update object")
+#         sentry_sdk.capture_exception()
+#     except Exception:
+#         # Silence all exceptions to avoid retries on the webhook
+#         sentry_sdk.capture_exception()
+#         print(traceback.format_exc())
+#     finally:
+#         # If we return anything except OK, webhook will be spammed with retries
+#         return {}
